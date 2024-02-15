@@ -89,6 +89,7 @@ export default function Home() {
           <p className={`m-0 max-w-[30ch] text-sm opacity-50`}>
             Explore starter templates for Next.js.
           </p>
+          <p>Hoang is cool</p>
         </a>
 
         <a
