@@ -7,6 +7,7 @@ import { Fragment, useEffect, useState } from 'react'
 import { Dialog, Transition } from '@headlessui/react'
 import { CheckIcon, ExclamationTriangleIcon } from '@heroicons/react/20/solid'
 import { EventSourceInput } from '@fullcalendar/core/index.js'
+import { CalendarResponse, parseICS } from "node-ical";
 
 
 interface Event {
@@ -36,6 +37,22 @@ export default function Home() {
   })
 
   useEffect(() => {
+    fetch("/myevents.ics").then(data => data.text()).then((data) => {
+      let events: CalendarResponse = parseICS(data);
+      let allEvents: Event[] = [];
+      for (const [key, value] of Object.entries(events)) {
+        if (value.type === "VEVENT") {
+          let calendarEvent: Event = {
+            title: value.summary,
+            start: value.start,
+            allDay: true,
+            id: value.start.getTime()
+          }
+          allEvents.push(calendarEvent);
+        }
+      }
+      setAllEvents(allEvents);
+    })
     let draggableEl = document.getElementById('draggable-el')
     if (draggableEl) {
       new Draggable(draggableEl, {
