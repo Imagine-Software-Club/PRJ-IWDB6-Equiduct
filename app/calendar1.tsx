@@ -72,6 +72,25 @@ export default function Home() {
     setShowModal(true)
   }
 
+  // Modify the eventClick handler to handle both deleting and editing events
+  function handleEventClick(data: { event: { id: string } }) {
+    const clickedEventId = Number(data.event.id);
+    const clickedEvent = allEvents.find(event => Number(event.id) === clickedEventId);
+
+    if (clickedEvent) {
+      setNewEvent({
+        title: clickedEvent.title,
+        start: clickedEvent.start,
+        allDay: clickedEvent.allDay,
+        id: clickedEvent.id
+      });
+      setShowModal(true);
+    } else {
+      // If the event is not found, it might be a new event. You can handle it differently or log an error.
+      console.error("Clicked event not found in allEvents array");
+    }
+  }
+
   function addEvent(data: DropArg) {
     const event = { ...newEvent, start: data.date.toISOString(), title: data.draggedEl.innerText, allDay: data.allDay, id: new Date().getTime() }
     setAllEvents([...allEvents, event])
@@ -146,7 +165,7 @@ export default function Home() {
               selectMirror={true}
               dateClick={handleDateClick}
               drop={(data) => addEvent(data)}
-              eventClick={(data) => handleDeleteModal(data)}
+              eventClick={(data) => handleEventClick(data)}
             />
           </div>
           <div id="draggable-el" className="ml-8 w-full border-2 p-2 rounded-md mt-16 lg:h-1/2 bg-violet-50">
@@ -260,7 +279,7 @@ export default function Home() {
                       </div>
                       <div className="mt-3 text-center sm:mt-5">
                         <Dialog.Title as="h3" className="text-base font-semibold leading-6 text-gray-900">
-                          Add Event
+                        {newEvent.title ? 'Edit Event' : 'Add Event'}
                         </Dialog.Title>
                         <form action="submit" onSubmit={handleSubmit}>
                           <div className="mt-2">
@@ -286,6 +305,16 @@ export default function Home() {
 
                             >
                               Cancel
+                            </button>
+                            <button
+                              type="button"
+                              className="inline-flex w-full justify-center rounded-md bg-red-600 px-3 py-2 text-sm font-semibold text-white shadow-sm hover:bg-red-500 focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-red-600 sm:col-start-1"
+                              onClick={() => {
+                                setShowDeleteModal(true);
+                                setIdToDelete(Number(newEvent.id));
+                              }}
+                            >
+                              Delete
                             </button>
                           </div>
                         </form>
