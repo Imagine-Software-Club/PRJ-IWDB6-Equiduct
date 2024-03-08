@@ -76,7 +76,7 @@ export default function Home() {
   function handleEventClick(data: { event: { id: string } }) {
     const clickedEventId = Number(data.event.id);
     const clickedEvent = allEvents.find(event => Number(event.id) === clickedEventId);
-
+  
     if (clickedEvent) {
       setNewEvent({
         title: clickedEvent.title,
@@ -86,10 +86,11 @@ export default function Home() {
       });
       setShowModal(true);
     } else {
-      // If the event is not found, it might be a new event. You can handle it differently or log an error.
       console.error("Clicked event not found in allEvents array");
     }
   }
+
+  
 
   function addEvent(data: DropArg) {
     const event = { ...newEvent, start: data.date.toISOString(), title: data.draggedEl.innerText, allDay: data.allDay, id: new Date().getTime() }
@@ -102,10 +103,18 @@ export default function Home() {
   }
 
   function handleDelete() {
-    setAllEvents(allEvents.filter(event => Number(event.id) !== Number(idToDelete)))
-    setShowDeleteModal(false)
-    setIdToDelete(null)
-  }
+  setAllEvents(allEvents.filter(event => Number(event.id) !== Number(idToDelete)));
+  setShowDeleteModal(false);
+  setIdToDelete(null);
+
+  // Reset the newEvent state
+  setNewEvent({
+    title: '',
+    start: '',
+    allDay: false,
+    id: 0
+  });
+}
 
   function handleCloseModal() {
     setShowModal(false)
@@ -127,15 +136,28 @@ export default function Home() {
   }
 
   function handleSubmit(e: React.FormEvent<HTMLFormElement>) {
-    e.preventDefault()
-    setAllEvents([...allEvents, newEvent])
-    setShowModal(false)
+    e.preventDefault();
+  
+    // Check if the new event already exists in allEvents
+    const existingEventIndex = allEvents.findIndex(event => Number(event.id) === Number(newEvent.id));
+  
+    if (existingEventIndex !== -1) {
+      // If it exists, update the existing event in allEvents
+      const updatedEvents = [...allEvents];
+      updatedEvents[existingEventIndex] = newEvent;
+      setAllEvents(updatedEvents);
+    } else {
+      // If it doesn't exist, add the new event to allEvents
+      setAllEvents([...allEvents, newEvent]);
+    }
+  
+    setShowModal(false);
     setNewEvent({
       title: '',
       start: '',
       allDay: false,
       id: 0
-    })
+    });
   }
 
   return (
