@@ -17,7 +17,6 @@
     "@headlessui/react": "^1.7.18",
     "@heroicons/react": "^2.1.1",
     "bootstrap": "file:next",
-    "formik": "^2.4.5",
     "fullcalendar": "^6.1.11",
     "next": "14.1.0",
     "react": "^18",
