@@ -111,7 +111,7 @@ export default function Home() {
       </nav>
       <div className="grid grid-cols-5 overflow-y-hidden">
         <div className="col-span-1 bg-zinc-200">
-          <p className="text-lg text-center pt-20">Your Tutoring Location</p>
+          <p className="text-2xl text-center pt-20">Your Tutoring Location</p>
           <div className="h-1 bg-violet-300"></div>
           <Image
             className="pt-24"
@@ -278,7 +278,8 @@ export default function Home() {
                         />
                       </div>
                       <div className="mt-3 text-center sm:mt-5">
-          ``              <Dialog.Title
+                        ``{" "}
+                        <Dialog.Title
                           as="h3"
                           className="text-base font-semibold leading-6 text-gray-900"
                         >
