@@ -16,15 +16,15 @@ export default function Contact() {
             <h1 className={styles.h1}>Log in to Tutor Dashboard</h1>
             <form method="post" action="/" className={styles.actual_form}>
               <div className={styles.column}>
-                <label for="username" className={styles.small_font}>
+                <label for="email" className={styles.small_font}>
                   Enter your tutor email address
                 </label>
                 <input
                   required
                   className={styles.input}
                   placeholder="email@email.com"
-                  type="text"
-                  name="name"
+                  type="email"
+                  name="email"
                   id="username-field"
                 />
               </div>
