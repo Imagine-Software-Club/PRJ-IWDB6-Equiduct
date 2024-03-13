@@ -6,6 +6,7 @@ export default function Home() {
   return (
     <main>
       {/* <NextJsDefaultHomePage></NextJsDefaultHomePage> */}
+      {/* <Sidebar /> */}
       <Calendar1></Calendar1>
     </main>
   );
