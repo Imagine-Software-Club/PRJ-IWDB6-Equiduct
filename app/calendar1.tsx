@@ -106,6 +106,7 @@ export default function Home() {
   setAllEvents(allEvents.filter(event => Number(event.id) !== Number(idToDelete)));
   setShowDeleteModal(false);
   setIdToDelete(null);
+  setShowModal(false)
 
   // Reset the newEvent state
   setNewEvent({
@@ -270,7 +271,7 @@ export default function Home() {
           </Dialog>
         </Transition.Root>
         <Transition.Root show={showModal} as={Fragment}>
-          <Dialog as="div" className="relative z-10" onClose={setShowModal}>
+          <Dialog as="div" className="relative z-10" onClose={() => {}}>
             <Transition.Child
               as={Fragment}
               enter="ease-out duration-300"
