@@ -15,6 +15,7 @@ interface Event {
   start: Date | string;
   allDay: boolean;
   id: number;
+  type: string;
 }
 
 export default function Home() {
@@ -33,7 +34,8 @@ export default function Home() {
     title: '',
     start: '',
     allDay: false,
-    id: 0
+    id: 0,
+    type: ''
   })
 
   useEffect(() => {
@@ -46,7 +48,8 @@ export default function Home() {
             title: value.summary,
             start: value.start,
             allDay: true,
-            id: value.start.getTime()
+            id: value.start.getTime(),
+            type: value.type
           }
           allEvents.push(calendarEvent);
         }
@@ -82,7 +85,8 @@ export default function Home() {
         title: clickedEvent.title,
         start: clickedEvent.start,
         allDay: clickedEvent.allDay,
-        id: clickedEvent.id
+        id: clickedEvent.id,
+        type: clickedEvent.type
       });
       setShowModal(true);
     } else {
@@ -113,7 +117,8 @@ export default function Home() {
     title: '',
     start: '',
     allDay: false,
-    id: 0
+    id: 0,
+    type: ''
   });
 }
 
@@ -123,7 +128,8 @@ export default function Home() {
       title: '',
       start: '',
       allDay: false,
-      id: 0
+      id: 0,
+      type: ''
     })
     setShowDeleteModal(false)
     setIdToDelete(null)
@@ -157,7 +163,8 @@ export default function Home() {
       title: '',
       start: '',
       allDay: false,
-      id: 0
+      id: 0,
+      type: ''
     });
   }
 
@@ -296,54 +303,73 @@ export default function Home() {
                   leaveTo="opacity-0 translate-y-4 sm:translate-y-0 sm:scale-95"
                 >
                   <Dialog.Panel className="relative transform overflow-hidden rounded-lg bg-white px-4 pb-4 pt-5 text-left shadow-xl transition-all sm:my-8 sm:w-full sm:max-w-lg sm:p-6">
-                    <div>
-                      <div className="mx-auto flex h-12 w-12 items-center justify-center rounded-full bg-green-100">
-                        <CheckIcon className="h-6 w-6 text-green-600" aria-hidden="true" />
-                      </div>
-                      <div className="mt-3 text-center sm:mt-5">
-                        <Dialog.Title as="h3" className="text-base font-semibold leading-6 text-gray-900">
-                        {newEvent.title ? 'Edit Event' : 'Add Event'}
-                        </Dialog.Title>
-                        <form action="submit" onSubmit={handleSubmit}>
-                          <div className="mt-2">
-                            <input type="text" name="title" className="block w-full rounded-md border-0 py-1.5 text-gray-900 
-                            shadow-sm ring-1 ring-inset ring-gray-300 placeholder:text-gray-400 
-                            focus:ring-2 
-                            focus:ring-inset focus:ring-violet-600 
-                            sm:text-sm sm:leading-6"
-                              value={newEvent.title} onChange={(e) => handleChange(e)} placeholder="Title" />
-                          </div>
-                          <div className="mt-5 sm:mt-6 sm:grid sm:grid-flow-row-dense sm:grid-cols-2 sm:gap-3">
-                            <button
-                              type="submit"
-                              className="inline-flex w-full justify-center rounded-md bg-violet-600 px-3 py-2 text-sm font-semibold text-white shadow-sm hover:bg-violet-500 focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-violet-600 sm:col-start-2 disabled:opacity-25"
-                              disabled={newEvent.title === ''}
-                            >
-                              Save
-                            </button>
-                            <button
-                              type="button"
-                              className="mt-3 inline-flex w-full justify-center rounded-md bg-white px-3 py-2 text-sm font-semibold text-gray-900 shadow-sm ring-1 ring-inset ring-gray-300 hover:bg-gray-50 sm:col-start-1 sm:mt-0"
-                              onClick={handleCloseModal}
+  <div>
+    <div className="mx-auto flex h-12 w-12 items-center justify-center rounded-full bg-green-100">
+      <CheckIcon className="h-6 w-6 text-green-600" aria-hidden="true" />
+    </div>
+    <div className="mt-3 text-center sm:mt-5">
+      <Dialog.Title as="h3" className="text-base font-semibold leading-6 text-gray-900">
+        {newEvent.title ? 'Edit Event' : 'Add Event'}
+      </Dialog.Title>
+      <form action="submit" onSubmit={handleSubmit}>
+        <div className="mt-2">
+          <input type="text" name="title" className="block w-full rounded-md border-0 py-1.5 text-gray-900 
+          shadow-sm ring-1 ring-inset ring-gray-300 placeholder:text-gray-400 
+          focus:ring-2 
+          focus:ring-inset focus:ring-violet-600 
+          sm:text-sm sm:leading-6"
+            value={newEvent.title} onChange={(e) => handleChange(e)} placeholder="Title" />
+        </div>
+        <div className="mt-2">
+          <select
+            name="eventType"
+            className="block w-full rounded-md border-0 py-1.5 text-gray-900 
+            shadow-sm ring-1 ring-inset ring-gray-300 placeholder:text-gray-400 
+            focus:ring-2 
+            focus:ring-inset focus:ring-violet-600 
+            sm:text-sm sm:leading-6"
+            value={newEvent.type}
+            onChange={(e) => setNewEvent({ ...newEvent, type: e.target.value })}
+          >
+            <option value="">Select Role</option>
+            <option value="Mentorship">Mentorship</option>
+            <option value="Junior Achievement">Junior Achievement</option>
+            <option value="Tutor">Tutor</option>
+            <option value="Admin">Admin</option>
+          </select>
+        </div>
+        <div className="mt-5 sm:mt-6 sm:grid sm:grid-flow-row-dense sm:grid-cols-2 sm:gap-3">
+          <button
+            type="submit"
+            className="inline-flex w-full justify-center rounded-md bg-violet-600 px-3 py-2 text-sm font-semibold text-white shadow-sm hover:bg-violet-500 focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-violet-600 sm:col-start-2 disabled:opacity-25"
+            disabled={newEvent.title === ''}
+          >
+            Save
+          </button>
+          <button
+            type="button"
+            className="mt-3 inline-flex w-full justify-center rounded-md bg-white px-3 py-2 text-sm font-semibold text-gray-900 shadow-sm ring-1 ring-inset ring-gray-300 hover:bg-gray-50 sm:col-start-1 sm:mt-0"
+            onClick={handleCloseModal}
 
-                            >
-                              Cancel
-                            </button>
-                            <button
-                              type="button"
-                              className="inline-flex w-full justify-center rounded-md bg-red-600 px-3 py-2 text-sm font-semibold text-white shadow-sm hover:bg-red-500 focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-red-600 sm:col-start-1"
-                              onClick={() => {
-                                setShowDeleteModal(true);
-                                setIdToDelete(Number(newEvent.id));
-                              }}
-                            >
-                              Delete
-                            </button>
-                          </div>
-                        </form>
-                      </div>
-                    </div>
-                  </Dialog.Panel>
+          >
+            Cancel
+          </button>
+          <button
+            type="button"
+            className="inline-flex w-full justify-center rounded-md bg-red-600 px-3 py-2 text-sm font-semibold text-white shadow-sm hover:bg-red-500 focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-red-600 sm:col-start-1"
+            onClick={() => {
+              setShowDeleteModal(true);
+              setIdToDelete(Number(newEvent.id));
+            }}
+          >
+            Delete
+          </button>
+        </div>
+      </form>
+    </div>
+  </div>
+</Dialog.Panel>
+
                 </Transition.Child>
               </div>
             </div>
