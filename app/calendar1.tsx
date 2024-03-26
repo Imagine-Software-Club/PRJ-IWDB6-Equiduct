@@ -39,7 +39,7 @@
       allDay: false,
       id: 0,
       type: '',
-      startHour: 12, // Initialize start hour variable
+      startHour: 0, // Initialize start hour variable
       startMinute: 0, // Initialize start minute variable
       startPeriod: '' // Initialize start period variable
     })
@@ -79,8 +79,9 @@
       }
     }, [])
 
-    function handleDateClick(arg: { date: Date, allDay: boolean }) {
-      setNewEvent({ ...newEvent, start: arg.date, allDay: arg.allDay, id: new Date().getTime() })
+    function handleDateClick(arg: { date: Date }) {
+      var d = arg.date 
+      setNewEvent({ ...newEvent, start: new Date(d), id: new Date().getTime() })
       setShowModal(true)
     }
 
@@ -155,14 +156,29 @@
     }
 
     const handleChange = (e: React.ChangeEvent<HTMLInputElement>): void => {
-      setNewEvent({
-        ...newEvent,
-        title: e.target.value
-      })
+      const { name, value, checked } = e.target;
+      setNewEvent(prevState => ({
+        ...prevState,
+        [name]: name === 'allDay' ? checked : value
+      }));
     }
 
     function handleSubmit(e: React.FormEvent<HTMLFormElement>) {
       e.preventDefault();
+    
+      // Get the selected hour, minute, and period values from the dropdowns
+      const selectedHour = newEvent.startHour;
+      const selectedMinute = newEvent.startMinute;
+      const selectedPeriod = newEvent.startPeriod;
+    
+      // Convert the selected hour to 24-hour format if it's in PM
+      let hour = selectedPeriod === 'PM' ? selectedHour + 12 : selectedHour;
+      // Adjust hour if it's 12 AM (midnight)
+      hour = hour === 12 && selectedPeriod === 'AM' ? 0 : hour;
+    
+      // Create a new Date object with the selected date and time
+      const selectedDate = new Date(newEvent.start);
+      selectedDate.setHours(hour, selectedMinute);
     
       // Check if the new event already exists in allEvents
       const existingEventIndex = allEvents.findIndex(event => Number(event.id) === Number(newEvent.id));
@@ -170,11 +186,11 @@
       if (existingEventIndex !== -1) {
         // If it exists, update the existing event in allEvents
         const updatedEvents = [...allEvents];
-        updatedEvents[existingEventIndex] = newEvent;
+        updatedEvents[existingEventIndex] = { ...newEvent, start: selectedDate };
         setAllEvents(updatedEvents);
       } else {
         // If it doesn't exist, add the new event to allEvents
-        setAllEvents([...allEvents, newEvent]);
+        setAllEvents([...allEvents, { ...newEvent, start: selectedDate }]);
       }
     
       setShowModal(false);
@@ -189,6 +205,8 @@
         startPeriod: '' // Initialize start period variable
       });
     }
+    
+    
 
     return (
       <>
@@ -334,6 +352,7 @@
           {newEvent.title ? 'Edit Event' : 'Add Event'}
         </Dialog.Title>
         <form action="submit" onSubmit={handleSubmit}>
+        
           <div className="mt-2">
             <input type="text" name="title" className="block w-full rounded-md border-0 py-1.5 text-gray-900 
             shadow-sm ring-1 ring-inset ring-gray-300 placeholder:text-gray-400 
@@ -361,6 +380,7 @@
             </select>
           </div>
           <div className="mt-2 grid grid-cols-3 gap-3">
+            
           {/* First new dropdown box */}
           <div className="mt-2">
             <select
@@ -422,6 +442,16 @@
             </select>
           </div>
           </div>
+          <div className="mt-2 flex items-center">
+          <input
+            type="checkbox"
+            id="allDay"
+            name="allDay"
+            className="rounded text-violet-600 focus:ring-violet-500 h-4 w-4"
+            checked={newEvent.allDay}
+            onChange={handleChange}/>
+          <label htmlFor="allDay" className="ml-2 text-sm text-gray-700">All Day</label>
+        </div>
           <div className="mt-5 sm:mt-6 sm:grid sm:grid-flow-row-dense sm:grid-cols-2 sm:gap-3">
             <button
               type="submit"
