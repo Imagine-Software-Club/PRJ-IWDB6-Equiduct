@@ -6,19 +6,23 @@
   import { Fragment, useEffect, useState } from 'react'
   import { Dialog, Transition } from '@headlessui/react'
   import { CheckIcon, ExclamationTriangleIcon } from '@heroicons/react/20/solid'
-  import { EventSourceInput } from '@fullcalendar/core/index.js'
+  import { EventDropArg, EventSourceInput } from '@fullcalendar/core/index.js'
   import { CalendarResponse, parseICS } from "node-ical";
 
 
   interface Event {
     title: string;
     start: Date | string;
+    end: Date | string; // Add end date variable
     allDay: boolean;
     id: number;
     type: string;
-    startHour: number; // Add start hour variable
-    startMinute: number; // Add start minute variable
-    startPeriod: string; // Add start period variable
+    startHour: number;
+    startMinute: number;
+    startPeriod: string;
+    endHour: number; // Add end hour variable
+    endMinute: number; // Add end minute variable
+    endPeriod: string; // Add end period variable
   }
 
   export default function Home() {
@@ -36,13 +40,18 @@
     const [newEvent, setNewEvent] = useState<Event>({
       title: '',
       start: '',
+      end: '', // Initialize end date variable
       allDay: false,
       id: 0,
       type: '',
-      startHour: 0, // Initialize start hour variable
-      startMinute: 0, // Initialize start minute variable
-      startPeriod: '' // Initialize start period variable
+      startHour: 0,
+      startMinute: 0,
+      startPeriod: '',
+      endHour: 0, // Initialize end hour variable
+      endMinute: 0, // Initialize end minute variable
+      endPeriod: '' // Initialize end period variable
     })
+    
 
     useEffect(() => {
       fetch("/myevents.ics").then(data => data.text()).then((data) => {
@@ -53,12 +62,16 @@
             let calendarEvent: Event = {
               title: value.summary,
               start: value.start,
+              end: value.end,
               allDay: true,
               id: value.start.getTime(),
               type: value.type,
               startHour: 12, // Initialize start hour variable
               startMinute: 0, // Initialize start minute variable
-              startPeriod: '' // Initialize start period variable
+              startPeriod: '', // Initialize start period variable
+              endHour: 12, // Initialize start hour variable
+              endMinute: 1, // Initialize start minute variable
+              endPeriod: '' // Initialize start period variable
             }
             allEvents.push(calendarEvent);
           }
@@ -81,7 +94,7 @@
 
     function handleDateClick(arg: { date: Date }) {
       var d = arg.date 
-      setNewEvent({ ...newEvent, start: new Date(d), id: new Date().getTime() })
+      setNewEvent({ ...newEvent, start: new Date(d), end: new Date(d), id: new Date().getTime() })
       setShowModal(true)
     }
 
@@ -94,18 +107,23 @@
         setNewEvent({
           title: clickedEvent.title,
           start: clickedEvent.start,
+          end: clickedEvent.end,
           allDay: clickedEvent.allDay,
           id: clickedEvent.id,
           type: clickedEvent.type,
           startHour: clickedEvent.startHour, // Initialize start hour variable
           startMinute: clickedEvent.startMinute, // Initialize start minute variable
-          startPeriod: clickedEvent.startPeriod // Initialize start period variable
+          startPeriod: clickedEvent.startPeriod, // Initialize start period variable
+          endHour: clickedEvent.endHour, // Initialize start hour variable
+          endMinute: clickedEvent.endMinute, // Initialize start minute variable
+          endPeriod: clickedEvent.endPeriod // Initialize start period variable
         });
         setShowModal(true);
       } else {
         console.error("Clicked event not found in allEvents array");
       }
     }
+    
 
     
 
@@ -129,12 +147,16 @@
     setNewEvent({
       title: '',
       start: '',
+      end: '',
       allDay: false,
       id: 0,
       type: '',
       startHour: 12, // Initialize start hour variable
       startMinute: 0, // Initialize start minute variable
-      startPeriod: '' // Initialize start period variable
+      startPeriod: '', // Initialize start period variable
+      endHour: 12, // Initialize start hour variable
+      endMinute: 1, // Initialize start minute variable
+      endPeriod: '' // Initialize start period variable
     });
   }
 
@@ -144,12 +166,16 @@
       setNewEvent({
         title: '',
         start: '',
+        end: '',
         allDay: false,
         id: 0,
         type: '',
         startHour: 12, // Initialize start hour variable
         startMinute: 0, // Initialize start minute variable
-        startPeriod: '' // Initialize start period variable
+        startPeriod: '', // Initialize start period variable
+        endHour: 12, // Initialize start hour variable
+        endMinute: 1, // Initialize start minute variable
+        endPeriod: '' // Initialize start period variable
       })
       
       setIdToDelete(null)
@@ -170,6 +196,13 @@
       const selectedHour = newEvent.startHour;
       const selectedMinute = newEvent.startMinute;
       const selectedPeriod = newEvent.startPeriod;
+      
+      // Adjustments inside handleSubmit function
+      let endHour = newEvent.endPeriod === 'PM' ? newEvent.endHour + 12 : newEvent.endHour;
+      endHour = endHour === 12 && newEvent.endPeriod === 'AM' ? 0 : endHour;
+      const endDate = new Date(newEvent.end);
+      endDate.setHours(endHour, newEvent.endMinute);
+
     
       // Convert the selected hour to 24-hour format if it's in PM
       let hour = selectedPeriod === 'PM' ? selectedHour + 12 : selectedHour;
@@ -179,6 +212,7 @@
       // Create a new Date object with the selected date and time
       const selectedDate = new Date(newEvent.start);
       selectedDate.setHours(hour, selectedMinute);
+  
     
       // Check if the new event already exists in allEvents
       const existingEventIndex = allEvents.findIndex(event => Number(event.id) === Number(newEvent.id));
@@ -186,25 +220,31 @@
       if (existingEventIndex !== -1) {
         // If it exists, update the existing event in allEvents
         const updatedEvents = [...allEvents];
-        updatedEvents[existingEventIndex] = { ...newEvent, start: selectedDate };
+        updatedEvents[existingEventIndex] = { ...newEvent, start: selectedDate, end: endDate };
         setAllEvents(updatedEvents);
       } else {
         // If it doesn't exist, add the new event to allEvents
-        setAllEvents([...allEvents, { ...newEvent, start: selectedDate }]);
+        setAllEvents([...allEvents, { ...newEvent, start: selectedDate, end: endDate }]);
       }
     
       setShowModal(false);
       setNewEvent({
         title: '',
         start: '',
+        end: '',
         allDay: false,
         id: 0,
         type: '',
         startHour: 12, // Initialize start hour variable
         startMinute: 0, // Initialize start minute variable
-        startPeriod: '' // Initialize start period variable
+        startPeriod: '', // Initialize start period variable
+        endHour: 12, // Initialize start hour variable
+        endMinute: 1, // Initialize start minute variable
+        endPeriod: '' // Initialize start period variable
       });
     }
+
+    
     
     
 
@@ -236,6 +276,7 @@
                 dateClick={handleDateClick}
                 drop={(data) => addEvent(data)}
                 eventClick={(data) => handleEventClick(data)}
+
               />
             </div>
             <div id="draggable-el" className="ml-8 w-full border-2 p-2 rounded-md mt-16 lg:h-1/2 bg-violet-50">
@@ -396,9 +437,10 @@
             >
               <option>Start Hour</option>
               {/* Add options for the dropdown */}
-              {[...Array(12)].map((_, index) => (
+              {[...Array(11)].map((_, index) => (
               <option key={index + 1} value={(index + 1)}>
                 {index + 1}</option>))}
+              <option value={0}>12</option>
             </select>
           </div>
           {/* Second new dropdown box */}
@@ -436,6 +478,70 @@
               onChange={(e) => setNewEvent({ ...newEvent, startPeriod: e.target.value })}
             >
               <option value="">Start Period</option>
+              {/* Add options for the dropdown */}
+              <option value="AM">AM</option>
+              <option value="PM">PM</option>
+            </select>
+          </div>
+          </div>
+          <div className="mt-2 grid grid-cols-3 gap-3">
+            
+          {/* First new dropdown box */}
+          <div className="mt-2">
+            <select
+              name="dropdown1"
+              className="block w-full rounded-md border-0 py-1.5 text-gray-900 
+              shadow-sm ring-1 ring-inset ring-gray-300 placeholder:text-gray-400 
+              focus:ring-2 
+              focus:ring-inset focus:ring-violet-600 
+              sm:text-sm sm:leading-6"
+              // Add necessary value and onChange handlers
+              value={newEvent.endHour} // Set value to reflect the state
+              onChange={(e) => setNewEvent({ ...newEvent, endHour: parseInt(e.target.value) })}
+            >
+              <option>End Hour</option>
+              {/* Add options for the dropdown */}
+              {[...Array(11)].map((_, index) => (
+              <option key={index + 1} value={(index + 1)}>
+                {index + 1}</option>))}
+                <option value={0}>12</option>
+            </select>
+          </div>
+          {/* Second new dropdown box */}
+          <div className="mt-2">
+            <select
+              name="dropdown2"
+              className="block w-full rounded-md border-0 py-1.5 text-gray-900 
+              shadow-sm ring-1 ring-inset ring-gray-300 placeholder:text-gray-400 
+              focus:ring-2 
+              focus:ring-inset focus:ring-violet-600 
+              sm:text-sm sm:leading-6"
+              // Add necessary value and onChange handlers
+              value={newEvent.endMinute} // Set value to reflect the state
+              onChange={(e) => setNewEvent({ ...newEvent, endMinute: parseInt(e.target.value) })}
+            >
+              <option>End Minute</option>
+              {/* Add options for the dropdown */}
+              {[...Array(60)].map((_, index) => (
+              <option key={index} value={index}>
+                {index < 10 ? `0${index}` : `${index}`}
+              </option>
+            ))}
+            </select>
+          </div>
+          <div className="mt-2">
+            <select
+              name="dropdown1"
+              className="block w-full rounded-md border-0 py-1.5 text-gray-900 
+              shadow-sm ring-1 ring-inset ring-gray-300 placeholder:text-gray-400 
+              focus:ring-2 
+              focus:ring-inset focus:ring-violet-600 
+              sm:text-sm sm:leading-6"
+              // Add necessary value and onChange handlers
+              value={newEvent.endPeriod} // Set value to reflect the state
+              onChange={(e) => setNewEvent({ ...newEvent, endPeriod: e.target.value })}
+            >
+              <option value="">End Period</option>
               {/* Add options for the dropdown */}
               <option value="AM">AM</option>
               <option value="PM">PM</option>
