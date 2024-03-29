@@ -9,15 +9,15 @@
     "lint": "next lint"
   },
   "dependencies": {
-    "@fullcalendar/core": "^6.1.10",
-    "@fullcalendar/daygrid": "^6.1.10",
+    "@fullcalendar/core": "^6.1.11",
+    "@fullcalendar/daygrid": "^6.1.11",
     "@fullcalendar/interaction": "^6.1.10",
     "@fullcalendar/react": "^6.1.10",
+    "@fullcalendar/rrule": "^6.1.11",
     "@fullcalendar/timegrid": "^6.1.10",
     "@headlessui/react": "^1.7.18",
     "@heroicons/react": "^2.1.1",
     "next": "14.1.0",
-    "node-ical": "^0.17.2",
     "react": "^18",
     "react-dom": "^18"
   },
