@@ -132,6 +132,37 @@
       setAllEvents([...allEvents, event])
     }
 
+    function handleEventDrop(info: EventDropArg) {
+      const { event } = info;
+    
+      // Check for the presence of event.start to satisfy TypeScript's strict null checks.
+      // Default to the current date if event.start is somehow null, though in practice it should always be set.
+      const startDate = event.start || new Date();
+      
+      const updatedEvents = allEvents.map(existingEvent => {
+        if (Number(existingEvent.id) === Number(event.id)) {
+          // Assume event.end might also be null and handle accordingly.
+          let newEnd = event.end || new Date(startDate.getTime()); // Use startDate's time if end is null.
+          
+          // If the existing event has an end date, calculate the duration and apply it to the new start date.
+          if (existingEvent.end && startDate) {
+            const duration = new Date(existingEvent.end).getTime() - new Date(existingEvent.start).getTime();
+            newEnd = new Date(startDate.getTime() + duration);
+          }
+    
+          return {
+            ...existingEvent,
+            start: startDate, // This is guaranteed to be a Date object.
+            end: newEnd, // This is also guaranteed to be a Date object.
+          };
+        }
+        return existingEvent;
+      });
+    
+      setAllEvents(updatedEvents);
+    }
+    
+
     function handleDeleteModal(data: { event: { id: string } }) {
       setShowDeleteModal(true)
       setIdToDelete(Number(data.event.id))
@@ -276,6 +307,7 @@
                 dateClick={handleDateClick}
                 drop={(data) => addEvent(data)}
                 eventClick={(data) => handleEventClick(data)}
+                eventDrop={handleEventDrop}
 
               />
             </div>
