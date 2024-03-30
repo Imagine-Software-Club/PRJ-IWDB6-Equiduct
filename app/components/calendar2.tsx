@@ -1,19 +1,14 @@
-"use client";
-import FullCalendar from "@fullcalendar/react";
-import dayGridPlugin from "@fullcalendar/daygrid";
-import interactionPlugin, {
-  Draggable,
-  DropArg,
-} from "@fullcalendar/interaction";
-import timeGridPlugin from "@fullcalendar/timegrid";
-import { Fragment, useEffect, useState } from "react";
-import { Dialog, Transition } from "@headlessui/react";
-import { CheckIcon, ExclamationTriangleIcon } from "@heroicons/react/20/solid";
-import { EventSourceInput } from "@fullcalendar/core/index.js";
+"use client"
+import FullCalendar from '@fullcalendar/react'
+import dayGridPlugin from '@fullcalendar/daygrid'
+import interactionPlugin, { Draggable, DropArg } from '@fullcalendar/interaction'
+import timeGridPlugin from '@fullcalendar/timegrid'
+import { Fragment, useEffect, useState } from 'react'
+import { Dialog, Transition } from '@headlessui/react'
+import { CheckIcon, ExclamationTriangleIcon } from '@heroicons/react/20/solid'
+import { EventSourceInput } from '@fullcalendar/core/index.js'
 import { CalendarResponse, parseICS } from "node-ical";
-import equi_image from "./components/equiduct.jpeg";
-import lansing_image from "./components/lansing_school_district.png";
-import Image from "next/image";
+
 
 interface Event {
   title: string;
@@ -32,41 +27,40 @@ export default function Home() {
     title: "",
     start: "",
     allDay: false,
-    id: 0,
-  });
+    id: 0
+  })
 
   useEffect(() => {
-    fetch("/myevents.ics")
-      .then((data) => data.text())
-      .then((data) => {
-        let events: CalendarResponse = parseICS(data);
-        let allEvents: Event[] = [];
-        for (const [key, value] of Object.entries(events)) {
-          if (value.type === "VEVENT") {
-            let calendarEvent: Event = {
-              title: value.summary,
-              start: value.start,
-              allDay: true,
-              id: value.start.getTime(),
-            };
-            allEvents.push(calendarEvent);
+    fetch("/myevents.ics").then(data => data.text()).then((data) => {
+      let events: CalendarResponse = parseICS(data);
+      let allEvents: Event[] = [];
+      for (const [key, value] of Object.entries(events)) {
+        if (value.type === "VEVENT") {
+          let calendarEvent: Event = {
+            title: value.summary,
+            start: value.start,
+            allDay: true,
+            id: value.start.getTime()
           }
+          allEvents.push(calendarEvent);
         }
-        setAllEvents(allEvents);
-      });
-    let draggableEl = document.getElementById("draggable-el");
+      }
+      setAllEvents(allEvents);
+    })
+    let draggableEl = document.getElementById('draggable-el')
     if (draggableEl) {
       new Draggable(draggableEl, {
         itemSelector: ".fc-event",
         eventData: function (eventEl) {
-          let title = eventEl.getAttribute("title");
-          let id = eventEl.getAttribute("data");
-          let start = eventEl.getAttribute("start");
-          return { title, id, start };
-        },
-      });
+          let title = eventEl.getAttribute("title")
+          let id = eventEl.getAttribute("data")
+          let start = eventEl.getAttribute("start")
+          return { title, id, start }
+        }
+      })
     }
-  }, []);
+  }, [])
+
 
   function handleDateClick(arg: { date: Date; allDay: boolean }) {
     setNewEvent({
@@ -81,22 +75,22 @@ export default function Home() {
   // Modify the eventClick handler to handle both deleting and editing events
   function handleEventClick(data: { event: { id: string } }) {
     const clickedEventId = Number(data.event.id);
-    const clickedEvent = allEvents.find(
-      (event) => Number(event.id) === clickedEventId
-    );
-
+    const clickedEvent = allEvents.find(event => Number(event.id) === clickedEventId);
+  
     if (clickedEvent) {
       setNewEvent({
         title: clickedEvent.title,
         start: clickedEvent.start,
         allDay: clickedEvent.allDay,
-        id: clickedEvent.id,
+        id: clickedEvent.id
       });
       setShowModal(true);
     } else {
       console.error("Clicked event not found in allEvents array");
     }
   }
+
+  
 
   function addEvent(data: DropArg) {
     const event = {
@@ -115,20 +109,18 @@ export default function Home() {
   }
 
   function handleDelete() {
-    setAllEvents(
-      allEvents.filter((event) => Number(event.id) !== Number(idToDelete))
-    );
-    setShowDeleteModal(false);
-    setIdToDelete(null);
+  setAllEvents(allEvents.filter(event => Number(event.id) !== Number(idToDelete)));
+  setShowDeleteModal(false);
+  setIdToDelete(null);
 
-    // Reset the newEvent state
-    setNewEvent({
-      title: "",
-      start: "",
-      allDay: false,
-      id: 0,
-    });
-  }
+  // Reset the newEvent state
+  setNewEvent({
+    title: '',
+    start: '',
+    allDay: false,
+    id: 0
+  });
+}
 
   function handleCloseModal() {
     setShowModal(false);
@@ -151,12 +143,10 @@ export default function Home() {
 
   function handleSubmit(e: React.FormEvent<HTMLFormElement>) {
     e.preventDefault();
-
+  
     // Check if the new event already exists in allEvents
-    const existingEventIndex = allEvents.findIndex(
-      (event) => Number(event.id) === Number(newEvent.id)
-    );
-
+    const existingEventIndex = allEvents.findIndex(event => Number(event.id) === Number(newEvent.id));
+  
     if (existingEventIndex !== -1) {
       // If it exists, update the existing event in allEvents
       const updatedEvents = [...allEvents];
@@ -166,76 +156,38 @@ export default function Home() {
       // If it doesn't exist, add the new event to allEvents
       setAllEvents([...allEvents, newEvent]);
     }
-
+  
     setShowModal(false);
     setNewEvent({
       title: "",
       start: "",
       allDay: false,
-      id: 0,
+      id: 0
     });
   }
 
   return (
     <>
-      <nav className="flex justify-between border-b p-4">
-        <Image
-          src={equi_image}
-          width={200}
-          height={10}
-          alt="this is a picture"
+    <div className="mt-6">
+        <FullCalendar
+            plugins={[dayGridPlugin, interactionPlugin, timeGridPlugin]}
+            headerToolbar={{
+            left: "prev,next today",
+            center: "title",
+            right: "resourceTimelineWook, dayGridMonth,timeGridWeek",
+            }}
+            events={allEvents as EventSourceInput}
+            nowIndicator={true}
+            editable={true}
+            droppable={true}
+            selectable={true}
+            selectMirror={true}
+            dateClick={handleDateClick}
+            drop={(data) => addEvent(data)}
+            eventClick={(data) => handleEventClick(data)}
+            initialView="dayGridMonth"
+            height="130vh"
         />
-      </nav>
-      <div className="grid grid-cols-5 overflow-y-hidden">
-        <div className="col-span-1 bg-zinc-200">
-          <p className="text-2xl text-center pt-20">Your Tutoring Location</p>
-          <div className="h-1 bg-violet-300"></div>
-          <Image
-            className="pt-24"
-            src={lansing_image}
-            width={400}
-            height={20}
-          />
-          <p className=" p-2">Lansing Student Development Program</p>
-          <p className=" p-2 pt-3">
-            Tutoring every Monday-Thursday at 3:30pm-5:30pm
-          </p>
-          <p className=" p-2 pt-3">Located at the Dan Johnson Field House</p>
-          <p className="text-cyan-500 pl-2 pr-2">220 N Pennsylvania Ave</p>
-          <p className="text-cyan-500 pl-2 pr-2">Lansing, MI 48912</p>
-          <p className="text-cyan-500 pl-2 pr-2">United States</p>
-          <p className=" pl-2 pr-2 pt-5">Program Director: Johnathon Horford</p>
-          <p className="text-cyan-500 pl-2 pr-2">johnathonhorford@gmail.com</p>
-        </div>
-        <div className="col-span-4">
-          <div className="p-10 bg-neutral-100 m-5 rounded-3xl">
-            <FullCalendar
-              plugins={[dayGridPlugin, interactionPlugin, timeGridPlugin]}
-              headerToolbar={{
-                left: "prev,next today",
-                center: "title",
-                right: "resourceTimelineWook, dayGridMonth,timeGridWeek",
-              }}
-              events={allEvents as EventSourceInput}
-              nowIndicator={true}
-              editable={true}
-              droppable={true}
-              selectable={true}
-              selectMirror={true}
-              dateClick={handleDateClick}
-              drop={(data) => addEvent(data)}
-              eventClick={(data) => handleEventClick(data)}
-              initialView="dayGridMonth"
-              height="130vh"
-            />
-          </div>
-          <div>
-            {events.map((event) => (
-              <div className="fc-event border-2 w-full rounded-md ml-auto text-center bg-white">
-                {event}
-              </div>
-            ))}
-          </div>{" "}
         </div>
 
         <Transition.Root show={showDeleteModal} as={Fragment}>
@@ -355,11 +307,8 @@ export default function Home() {
                         />
                       </div>
                       <div className="mt-3 text-center sm:mt-5">
-                        <Dialog.Title
-                          as="h3"
-                          className="text-base font-semibold leading-6 text-gray-900"
-                        >
-                          {newEvent.title ? "Edit Event" : "Add Event"}
+                        <Dialog.Title as="h3" className="text-base font-semibold leading-6 text-gray-900">
+                        {newEvent.title ? 'Edit Event' : 'Add Event'}
                         </Dialog.Title>
                         <form action="submit" onSubmit={handleSubmit}>
                           <div className="mt-2">
@@ -411,7 +360,6 @@ export default function Home() {
             </div>
           </Dialog>
         </Transition.Root>
-      </div>
     </>
-  );
+  )
 }

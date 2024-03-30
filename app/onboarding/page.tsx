@@ -10,7 +10,17 @@ export default function Onboarding() {
         <h1 className="font-bold text-2xl text-gray-700">Equiduct</h1>
       </nav>
       <div className="grid grid-cols-5 overflow-hidden">
-        <div className="col-span-1 bg-zinc-200 h-dvh"></div>
+        <div className="col-span-1 bg-zinc-200 h-dvh">
+          <div className="p-3 bg-zinc-50 m-5 rounded-xl">
+            <h2 className="text-lg">Please fill these background forms out:</h2>
+            <p className="text-sky-600 m-3"><a href="https://madisondiocese.org/documents/2017/1/onlinelingo.pdf"download>Background Check #1</a></p>
+
+            {/* the above link is just a random pdf that i have to replace */}
+            <p className="text-sky-600 m-3"><a href="https://madisondiocese.org/documents/2017/1/onlinelingo.pdf"download>Background Check #2</a></p>
+            {/* same with this one too*/}
+            <p className="text-lg pt-5">Once you have filled out the background check forms, please email the completed forms to: <b>maddenlu@msu.edu</b></p>
+            </div>
+        </div>
         <div className="col-span-4">
           <div className="mt-6">
             <p className="p-3 text-6xl">Welcome!</p>
@@ -31,12 +41,6 @@ export default function Onboarding() {
                   </div>
                   <div className="flex justify-center items-center bg-green-500 h-32 text-center text-2xl">
                     Complete
-                  </div>
-                  <div className="flex justify-center items-center bg-zinc-200 h-32 text-center text-2xl">
-                    Complete
-                  </div>
-                  <div className="flex justify-center items-center bg-red-500 h-32 text-center text-2xl">
-                    Incomplete
                   </div>
                 </div>
               </div>
