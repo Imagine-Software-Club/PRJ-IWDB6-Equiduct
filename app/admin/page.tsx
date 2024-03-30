@@ -177,12 +177,12 @@ export default function Admin() {
   return (
     <>
       <nav className="flex justify-between border-b p-4">
-        <Image
+        {/* <Image
           href="../components/equiduct.jpeg"
           width={200}
           height={10}
           alt="this is a picture"
-        />
+        /> */}
       </nav>
       <div className="grid grid-cols-5 overflow-y-hidden">
         <div className="col-span-1 bg-zinc-200">

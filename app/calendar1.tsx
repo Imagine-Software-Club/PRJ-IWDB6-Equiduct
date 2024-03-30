@@ -212,9 +212,9 @@ export default function Home() {
             <FullCalendar
               plugins={[dayGridPlugin, interactionPlugin, timeGridPlugin]}
               headerToolbar={{
-                left: "prev,next today",
-                center: "title",
-                right: "resourceTimelineWook, dayGridMonth,timeGridWeek",
+                left: "title prev next",
+                center: "",
+                right: "dayGridMonth,timeGridWeek",
               }}
               events={allEvents as EventSourceInput}
               nowIndicator={true}
