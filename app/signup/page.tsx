@@ -14,7 +14,7 @@ export default function Contact() {
       <div className="flex justify-center">
         <div className="bg-white w-3/5">
           <div className={styles.form_center}>
-            <h1 className={styles.h1}>Log in to Tutor Dashboard</h1>
+            <h1 className={styles.h1}>Sign up Tutor Dashboard</h1>
             <form method="post" action="/" className={styles.actual_form}>
               <div className={styles.column}>
                 <label htmlFor="email" className={styles.small_font}>
