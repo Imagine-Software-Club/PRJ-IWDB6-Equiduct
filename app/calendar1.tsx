@@ -9,11 +9,15 @@ import timeGridPlugin from "@fullcalendar/timegrid";
 import { Fragment, useEffect, useState } from "react";
 import { Dialog, Transition } from "@headlessui/react";
 import { CheckIcon, ExclamationTriangleIcon } from "@heroicons/react/20/solid";
+
 import { EventDropArg, EventSourceInput } from "@fullcalendar/core/index.js";
 import rrulePlugin from "@fullcalendar/rrule";
 import { Calendar } from "@fullcalendar/core";
 import { RRule } from "rrule";
-//import { CalendarResponse, parseICS } from "node-ical";
+import equi_image from "./components/equiduct.jpeg";
+import lansing_image from "./components/lansing_school_district.png";
+import Image from "next/image";
+import { CalendarResponse, parseICS } from "node-ical";
 
 interface Event {
   title: string;
@@ -35,13 +39,14 @@ interface Event {
 }
 
 export default function Home() {
-  const [events, setEvents] = useState([
+  const [events, setEvents] = useState([]);
+  /* const [events, setEvents] = useState([
     { title: "event 1", id: "1" },
     { title: "event 2", id: "2" },
     { title: "event 3", id: "3" },
     { title: "event 4", id: "4" },
     { title: "event 5", id: "5" },
-  ]);
+  ]); */
   const [allEvents, setAllEvents] = useState<Event[]>([]);
   const [showModal, setShowModal] = useState(false);
   const [showDeleteModal, setShowDeleteModal] = useState(false);
@@ -408,12 +413,37 @@ export default function Home() {
 
   return (
     <>
-      <nav className="flex justify-between mb-12 border-b border-violet-100 p-4">
-        <h1 className="font-bold text-2xl text-gray-700">Calendar</h1>
+      <nav className="flex justify-between border-b p-4">
+        <Image
+          src={equi_image}
+          width={200}
+          height={10}
+          alt="this is a picture"
+        />
       </nav>
-      <div className="flex min-h-screen flex-col items-center justify-between p-24">
-        <div className="grid grid-cols-10">
-          <div className="col-span-8">
+      <div className="grid grid-cols-5 overflow-y-hidden">
+        <div className="col-span-1 bg-zinc-200">
+          <p className="text-2xl text-center pt-20">Your Tutoring Location</p>
+          <div className="h-1 bg-violet-300"></div>
+          <Image
+            className="pt-24"
+            src={lansing_image}
+            width={400}
+            height={20}
+          />
+          <p className=" p-2">Lansing Student Development Program</p>
+          <p className=" p-2 pt-3">
+            Tutoring every Monday-Thursday at 3:30pm-5:30pm
+          </p>
+          <p className=" p-2 pt-3">Located at the Dan Johnson Field House</p>
+          <p className="text-cyan-500 pl-2 pr-2">220 N Pennsylvania Ave</p>
+          <p className="text-cyan-500 pl-2 pr-2">Lansing, MI 48912</p>
+          <p className="text-cyan-500 pl-2 pr-2">United States</p>
+          <p className=" pl-2 pr-2 pt-5">Program Director: Johnathon Horford</p>
+          <p className="text-cyan-500 pl-2 pr-2">johnathonhorford@gmail.com</p>
+        </div>
+        <div className="col-span-4">
+          <div className="p-10 bg-neutral-100 m-5 rounded-3xl">
             <FullCalendar
               plugins={[
                 dayGridPlugin,
@@ -422,8 +452,8 @@ export default function Home() {
                 rrulePlugin,
               ]}
               headerToolbar={{
-                left: "prev,next today",
-                center: "title",
+                left: "title prev next",
+                center: "",
                 right: "resourceTimelineWook, dayGridMonth,timeGridWeek",
               }}
               events={allEvents as EventSourceInput}
@@ -436,6 +466,8 @@ export default function Home() {
               drop={(data) => addEvent(data)}
               eventClick={(data) => handleDeleteModal(data)}
               eventDrop={handleEventDrop}
+              initialView="dayGridMonth"
+              height="130vh"
             />
           </div>
           <div
@@ -445,14 +477,14 @@ export default function Home() {
             <h1 className="font-bold text-lg text-center">Drag Event</h1>
             {events.map((event) => (
               <div
-                className="fc-event border-2 p-1 m-2 w-full rounded-md ml-auto text-center bg-white"
+                className="fc-event border-2 w-full rounded-md ml-auto text-center bg-white"
                 title={event.title}
                 key={event.id}
               >
                 {event.title}
               </div>
             ))}
-          </div>
+          </div>{" "}
         </div>
 
         <Transition.Root show={showDeleteModal} as={Fragment}>
@@ -576,7 +608,7 @@ export default function Home() {
                           as="h3"
                           className="text-base font-semibold leading-6 text-gray-900"
                         >
-                          Add Event
+                          {newEvent.title ? "Edit Event" : "Add Event"}
                         </Dialog.Title>
                         <form action="submit" onSubmit={handleSubmit}>
                           <div className="mt-2">
