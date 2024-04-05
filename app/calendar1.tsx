@@ -14,6 +14,8 @@ import { EventDropArg, EventSourceInput } from "@fullcalendar/core/index.js";
 import rrulePlugin from "@fullcalendar/rrule";
 import { Calendar } from "@fullcalendar/core";
 import { RRule } from "rrule";
+
+import { db, tmp_set1, getAllDocuments, DBsetNewEvent } from "./database-test/firebase-connection"
 import equi_image from "./components/equiduct.jpeg";
 import lansing_image from "./components/lansing_school_district.png";
 import Image from "next/image";
@@ -47,6 +49,7 @@ export default function Home() {
     { title: "event 4", id: "4" },
     { title: "event 5", id: "5" },
   ]); */
+
   const [allEvents, setAllEvents] = useState<Event[]>([]);
   const [showModal, setShowModal] = useState(false);
   const [showDeleteModal, setShowDeleteModal] = useState(false);
@@ -67,6 +70,15 @@ export default function Home() {
   });
 
   useEffect(() => {
+    getAllDocuments()
+      .then((fetchedEvents) => {
+        console.log(fetchedEvents)
+        setAllEvents(fetchedEvents);
+      })
+      .catch((error) => {
+        console.error('Error fetching events:', error);
+      });
+
     let draggableEl = document.getElementById("draggable-el");
     if (draggableEl) {
       new Draggable(draggableEl, {
@@ -80,6 +92,38 @@ export default function Home() {
       });
     }
   }, []);
+
+  function loadICS(){
+    fetch("/myevents.ics").then(data => data.text()).then((data) => {
+      let events: CalendarResponse = parseICS(data);
+      let allEvents: Event[] = [];
+      for (const [key, value] of Object.entries(events)) {
+        if (value.type === "VEVENT") {
+          let calendarEvent: Event = {
+            title: value.summary,
+            start: value.start,
+            allDay: false,
+            id: value.start.getTime(),
+
+            end: value.end,
+            // startRecur?: Date | string; // Start date of recurrence
+            // endRecur?: Date | string; // End date of recurrence
+            //daysOfWeek?: number[]; // For weekly recurrence
+            startHour: 0,
+            startMinute: 0,
+            startPeriod: "AM",
+            endHour: 0, // Add end hour variable
+            endMinute: 0, // Add end minute variable
+            endPeriod: "AM", // Add end period variable
+            //groupId?: string; // An identifier for events to be handled together as a group
+            type: typeof value.attendee === 'string' ? value.attendee : '',
+          }
+          allEvents.push(calendarEvent);
+        }
+      }
+      setAllEvents(allEvents);
+    })
+  }
 
   function handleDateClick(arg: { date: Date; allDay: boolean }) {
     setNewEvent({
@@ -393,6 +437,8 @@ export default function Home() {
     */
     setAllEvents([...allEvents, ...recurringEvents]);
 
+    DBsetNewEvent(recurringEvents);
+    
     // Reset form and close modal
     setShowModal(false);
     setNewEvent({
