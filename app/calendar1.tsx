@@ -14,12 +14,18 @@ import { EventDropArg, EventSourceInput } from "@fullcalendar/core/index.js";
 import rrulePlugin from "@fullcalendar/rrule";
 import { Calendar } from "@fullcalendar/core";
 import { RRule } from "rrule";
+import listPlugin from '@fullcalendar/list';
 
-import { db, tmp_set1, getAllDocuments, DBsetNewEvent } from "./database-test/firebase-connection"
+import {
+  db,
+  tmp_set1,
+  getAllDocuments,
+  DBsetNewEvent,
+} from "./database-test/firebase-connection";
 import equi_image from "./components/equiduct.jpeg";
 import lansing_image from "./components/lansing_school_district.png";
 import Image from "next/image";
-import { CalendarResponse, parseICS } from "node-ical";
+// import { CalendarResponse, parseICS } from "node-ical";
 
 interface Event {
   title: string;
@@ -38,6 +44,7 @@ interface Event {
   groupId?: string; // An identifier for events to be handled together as a group
   id: number;
   type: string;
+  state?: string;
 }
 
 export default function Home() {
@@ -72,11 +79,11 @@ export default function Home() {
   useEffect(() => {
     getAllDocuments()
       .then((fetchedEvents) => {
-        console.log(fetchedEvents)
+        console.log(fetchedEvents);
         setAllEvents(fetchedEvents);
       })
       .catch((error) => {
-        console.error('Error fetching events:', error);
+        console.error("Error fetching events:", error);
       });
 
     let draggableEl = document.getElementById("draggable-el");
@@ -93,37 +100,37 @@ export default function Home() {
     }
   }, []);
 
-  function loadICS(){
-    fetch("/myevents.ics").then(data => data.text()).then((data) => {
-      let events: CalendarResponse = parseICS(data);
-      let allEvents: Event[] = [];
-      for (const [key, value] of Object.entries(events)) {
-        if (value.type === "VEVENT") {
-          let calendarEvent: Event = {
-            title: value.summary,
-            start: value.start,
-            allDay: false,
-            id: value.start.getTime(),
+  // function loadICS(){
+  //   fetch("/myevents.ics").then(data => data.text()).then((data) => {
+  //     let events: CalendarResponse = parseICS(data);
+  //     let allEvents: Event[] = [];
+  //     for (const [key, value] of Object.entries(events)) {
+  //       if (value.type === "VEVENT") {
+  //         let calendarEvent: Event = {
+  //           title: value.summary,
+  //           start: value.start,
+  //           allDay: false,
+  //           id: value.start.getTime(),
 
-            end: value.end,
-            // startRecur?: Date | string; // Start date of recurrence
-            // endRecur?: Date | string; // End date of recurrence
-            //daysOfWeek?: number[]; // For weekly recurrence
-            startHour: 0,
-            startMinute: 0,
-            startPeriod: "AM",
-            endHour: 0, // Add end hour variable
-            endMinute: 0, // Add end minute variable
-            endPeriod: "AM", // Add end period variable
-            //groupId?: string; // An identifier for events to be handled together as a group
-            type: typeof value.attendee === 'string' ? value.attendee : '',
-          }
-          allEvents.push(calendarEvent);
-        }
-      }
-      setAllEvents(allEvents);
-    })
-  }
+  //           end: value.end,
+  //           // startRecur?: Date | string; // Start date of recurrence
+  //           // endRecur?: Date | string; // End date of recurrence
+  //           //daysOfWeek?: number[]; // For weekly recurrence
+  //           startHour: 0,
+  //           startMinute: 0,
+  //           startPeriod: "AM",
+  //           endHour: 0, // Add end hour variable
+  //           endMinute: 0, // Add end minute variable
+  //           endPeriod: "AM", // Add end period variable
+  //           //groupId?: string; // An identifier for events to be handled together as a group
+  //           type: typeof value.attendee === 'string' ? value.attendee : '',
+  //         }
+  //         allEvents.push(calendarEvent);
+  //       }
+  //     }
+  //     setAllEvents(allEvents);
+  //   })
+  // }
 
   function handleDateClick(arg: { date: Date; allDay: boolean }) {
     setNewEvent({
@@ -438,7 +445,7 @@ export default function Home() {
     setAllEvents([...allEvents, ...recurringEvents]);
 
     DBsetNewEvent(recurringEvents);
-    
+
     // Reset form and close modal
     setShowModal(false);
     setNewEvent({
@@ -476,6 +483,7 @@ export default function Home() {
             src={lansing_image}
             width={400}
             height={20}
+            alt="this is a picture"
           />
           <p className=" p-2">Lansing Student Development Program</p>
           <p className=" p-2 pt-3">
@@ -496,11 +504,12 @@ export default function Home() {
                 interactionPlugin,
                 timeGridPlugin,
                 rrulePlugin,
+                listPlugin
               ]}
               headerToolbar={{
                 left: "title prev next",
                 center: "",
-                right: "resourceTimelineWook, dayGridMonth,timeGridWeek",
+                right: "dayGridMonth,timeGridWeek,listMonth",
               }}
               events={allEvents as EventSourceInput}
               nowIndicator={true}
@@ -516,7 +525,7 @@ export default function Home() {
               height="130vh"
             />
           </div>
-          <div
+          {/* <div
             id="draggable-el"
             className="ml-8 w-full border-2 p-2 rounded-md mt-16 lg:h-1/2 bg-violet-50"
           >
@@ -530,7 +539,7 @@ export default function Home() {
                 {event.title}
               </div>
             ))}
-          </div>{" "}
+          </div>{" "} */}
         </div>
 
         <Transition.Root show={showDeleteModal} as={Fragment}>
