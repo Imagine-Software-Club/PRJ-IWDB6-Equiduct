@@ -1,4 +1,5 @@
 "use client";
+import React from "react";
 import FullCalendar from "@fullcalendar/react";
 import dayGridPlugin from "@fullcalendar/daygrid";
 import interactionPlugin, {
@@ -18,6 +19,7 @@ import equi_image from "./components/equiduct.jpeg";
 import lansing_image from "./components/lansing_school_district.png";
 import Image from "next/image";
 import { CalendarResponse, parseICS } from "node-ical";
+import listPlugin from "@fullcalendar/list";
 
 interface Event {
   title: string;
@@ -421,16 +423,35 @@ export default function Home() {
           alt="this is a picture"
         />
       </nav>
-      <div className="grid grid-cols-5 overflow-y-hidden">
+      <div className="grid grid-cols-5">
         <div className="col-span-1 bg-zinc-200">
+          <p className="p-3">
+            It is the responsibility of each mentor to coordinate events with
+            their mentees. Once mentors have discussed plans with their mentee,
+            they are expected to email Kristy Haggerty,
+            <b>ecacclansing@gmail.com</b>, with their plans and the projected
+            costs for the event 48 hours prior to the date of the event.{" "}
+          </p>
+          <p className="p-3">
+            Once Kristy approves the event, you may coordinate the event with
+            your mentee. Please keep or photograph receipts from mentorship
+            events. We encourage you to take photographs during these events.
+            After each event, please send all photos of the event and all
+            receipts to Kristy for reimbursement. Reimbursement is handled by
+            ECAC via checks that can be picked up from Kristy at ECAC.
+          </p>
+          <p className="p-3">
+            An admin will approve your event after you have added/edited an
+            event
+          </p>
           <p className="text-2xl text-center pt-20">Your Tutoring Location</p>
           <div className="h-1 bg-violet-300"></div>
-          <Image
+          {/* <Image
             className="pt-24"
             src={lansing_image}
             width={400}
             height={20}
-          />
+          /> */}
           <p className=" p-2">Lansing Student Development Program</p>
           <p className=" p-2 pt-3">
             Tutoring every Monday-Thursday at 3:30pm-5:30pm
@@ -450,11 +471,12 @@ export default function Home() {
                 interactionPlugin,
                 timeGridPlugin,
                 rrulePlugin,
+                listPlugin,
               ]}
               headerToolbar={{
                 left: "title prev next",
                 center: "",
-                right: "resourceTimelineWook, dayGridMonth,timeGridWeek",
+                right: "dayGridMonth,timeGridWeek listMonth",
               }}
               events={allEvents as EventSourceInput}
               nowIndicator={true}
@@ -467,7 +489,7 @@ export default function Home() {
               eventClick={(data) => handleDeleteModal(data)}
               eventDrop={handleEventDrop}
               initialView="dayGridMonth"
-              height="130vh"
+              height="110vh"
             />
           </div>
           <div
@@ -484,7 +506,7 @@ export default function Home() {
                 {event.title}
               </div>
             ))}
-          </div>{" "}
+          </div>
         </div>
 
         <Transition.Root show={showDeleteModal} as={Fragment}>
