@@ -15,11 +15,13 @@ import rrulePlugin from "@fullcalendar/rrule";
 import { Calendar } from "@fullcalendar/core";
 import { RRule } from "rrule";
 
-import { db, tmp_set1, getAllDocuments, DBsetNewEvent } from "./database-test/firebase-connection"
+import { db, tmp_set1, getAllDocuments, DBsetNewEvent, deleteEvent, updateEvent } from "./database-test/firebase-connection"
 import equi_image from "./components/equiduct.jpeg";
 import lansing_image from "./components/lansing_school_district.png";
 import Image from "next/image";
-import { CalendarResponse, parseICS } from "node-ical";
+// import { CalendarResponse, parseICS } from "node-ical";
+
+import { v4 as uuidv4 } from 'uuid';
 
 interface Event {
   title: string;
@@ -36,7 +38,7 @@ interface Event {
   endMinute: number; // Add end minute variable
   endPeriod: string; // Add end period variable
   groupId?: string; // An identifier for events to be handled together as a group
-  id: number;
+  id: string;
   type: string;
 }
 
@@ -53,7 +55,7 @@ export default function Home() {
   const [allEvents, setAllEvents] = useState<Event[]>([]);
   const [showModal, setShowModal] = useState(false);
   const [showDeleteModal, setShowDeleteModal] = useState(false);
-  const [idToDelete, setIdToDelete] = useState<number | null>(null);
+  const [idToDelete, setIdToDelete] = useState<string | null>(null);
   const [newEvent, setNewEvent] = useState<Event>({
     title: "",
     start: "",
@@ -65,14 +67,14 @@ export default function Home() {
     endMinute: 0,
     endPeriod: "AM",
     allDay: false,
-    id: 0,
+    id: '',
     type: "",
   });
 
   useEffect(() => {
     getAllDocuments()
       .then((fetchedEvents) => {
-        console.log(fetchedEvents)
+        //console.log(fetchedEvents)
         setAllEvents(fetchedEvents);
       })
       .catch((error) => {
@@ -92,7 +94,7 @@ export default function Home() {
       });
     }
   }, []);
-
+/*
   function loadICS(){
     fetch("/myevents.ics").then(data => data.text()).then((data) => {
       let events: CalendarResponse = parseICS(data);
@@ -123,22 +125,23 @@ export default function Home() {
       }
       setAllEvents(allEvents);
     })
-  }
+  }*/
 
   function handleDateClick(arg: { date: Date; allDay: boolean }) {
     setNewEvent({
       ...newEvent,
       start: arg.date,
       allDay: arg.allDay,
-      id: new Date().getTime(),
+      // id: new Date().getTime(),
+      id: uuidv4()
     });
     setShowModal(true);
   }
 
   function handleEventClick(data: { event: { id: string } }) {
-    const clickedEventId = Number(data.event.id);
+    const clickedEventId = String(data.event.id);
     const clickedEvent = allEvents.find(
-      (event) => Number(event.id) === clickedEventId
+      (event) => String(event.id) === clickedEventId
     );
 
     if (clickedEvent) {
@@ -178,7 +181,8 @@ export default function Home() {
       start: date,
       title: data.draggedEl.innerText,
       groupId: "recurring-events",
-      id: new Date().getTime(),
+      //id: new Date().getTime(),
+      id: uuidv4()
     }));
 
     setAllEvents([...allEvents, ...recurringEvents]);
@@ -192,41 +196,67 @@ export default function Home() {
     const startDate = event.start || new Date();
 
     const updatedEvents = allEvents.map((existingEvent) => {
-      if (Number(existingEvent.id) === Number(event.id)) {
-        // Assume event.end might also be null and handle accordingly.
-        let newEnd = event.end || new Date(startDate.getTime()); // Use startDate's time if end is null.
+      if (String(existingEvent.id) === String(event.id)) {
+          let newEnd = event.end || new Date(startDate.getTime());
 
-        // If the existing event has an end date, calculate the duration and apply it to the new start date.
-        if (existingEvent.end && startDate) {
-          const duration =
-            new Date(existingEvent.end).getTime() -
-            new Date(existingEvent.start).getTime();
-          newEnd = new Date(startDate.getTime() + duration);
-        }
+          if (existingEvent.end && startDate) {
+              const duration = new Date(existingEvent.end).getTime() - new Date(existingEvent.start).getTime();
+              newEnd = new Date(startDate.getTime() + duration);
+          }
 
-        return {
-          ...existingEvent,
-          start: startDate, // This is guaranteed to be a Date object.
-          end: newEnd, // This is also guaranteed to be a Date object.
-        };
+          // Prepare the updated event object
+          const updatedEvent = {
+              start: startDate.toISOString(), // Convert to ISO string for database compatibility
+              end: newEnd.toISOString(),
+          };
+
+          // Call updateEvent to update the database
+          updateEvent(String(existingEvent.id), updatedEvent)
+              .then(() => {
+                  console.log(`Event with ID ${existingEvent.id} updated successfully.`);
+              })
+              .catch((error) => {
+                  console.error('Error updating event:', error);
+              });
+
+          return {
+              ...existingEvent,
+              start: startDate,
+              end: newEnd,
+          };
       }
       return existingEvent;
-    });
+  });
+
 
     setAllEvents(updatedEvents);
   }
 
   function handleDeleteModal(data: { event: { id: string } }) {
     setShowDeleteModal(true);
-    setIdToDelete(Number(data.event.id));
+    setIdToDelete(String(data.event.id));
   }
 
   function handleDelete() {
-    setAllEvents(
-      allEvents.filter((event) => Number(event.id) !== Number(idToDelete))
-    );
-    setShowDeleteModal(false);
-    setIdToDelete(null);
+    if (idToDelete != null){
+      console.log("OK idToDelete")
+      console.log(idToDelete)
+      deleteEvent(String(idToDelete))
+        .then(() => {
+          console.log("ok delete DB")
+          setAllEvents(
+            allEvents.filter((event) => String(event.id) !== String(idToDelete))
+          );
+          setShowDeleteModal(false);
+          setIdToDelete(null);
+          console.log("OK delete FE")
+        })
+        .catch((error) =>{
+          console.error('Error deleting event:', error);
+        });
+    } else{
+      console.log("bruh")
+    }
   }
 
   function handleCloseModal() {
@@ -243,7 +273,7 @@ export default function Home() {
       endMinute: 0,
       endPeriod: "AM",
       allDay: false,
-      id: 0,
+      id: '',
       type: "",
     });
     //setShowDeleteModal(false);
@@ -329,14 +359,14 @@ export default function Home() {
       ?.value;
 
     // Now you have all the form data, you can use it as needed.
-    console.log("Repeat Interval:", repeatInterval);
-    console.log("Custom Time:", customTime);
-    //console.log("Number of Repeats:", numRepeats);
-    console.log("Day Repeat Interval:", dayrepeatInterval);
-    console.log("Weekday Repeat Interval:", weekdayrepeatInterval);
-    console.log("Monthly Repeat Interval:", monthlyrepeatInterval);
-    console.log("Yearly Repeat Interval:", yearlyrepeatInterval);
-    console.log("Event Description:", eventDescription);
+    // console.log("Repeat Interval:", repeatInterval);
+    // console.log("Custom Time:", customTime);
+    // //console.log("Number of Repeats:", numRepeats);
+    // console.log("Day Repeat Interval:", dayrepeatInterval);
+    // console.log("Weekday Repeat Interval:", weekdayrepeatInterval);
+    // console.log("Monthly Repeat Interval:", monthlyrepeatInterval);
+    // console.log("Yearly Repeat Interval:", yearlyrepeatInterval);
+    // console.log("Event Description:", eventDescription);
     //console.log(numRepeats);
 
     const startDate = new Date(newEvent.start);
@@ -409,7 +439,8 @@ export default function Home() {
       title: newEvent.title,
       start: date,
       groupId: "recurring-events",
-      id: new Date().getTime() + index,
+      //id: new Date().getTime() + index,
+      id: uuidv4()
     }));
 
     /*
@@ -452,7 +483,7 @@ export default function Home() {
       endMinute: 0,
       endPeriod: "AM",
       allDay: false,
-      id: 0,
+      id: '',
       type: "",
     });
   }
@@ -476,6 +507,7 @@ export default function Home() {
             src={lansing_image}
             width={400}
             height={20}
+            alt="this is a picture"
           />
           <p className=" p-2">Lansing Student Development Program</p>
           <p className=" p-2 pt-3">
@@ -516,7 +548,7 @@ export default function Home() {
               height="130vh"
             />
           </div>
-          <div
+          {/* <div
             id="draggable-el"
             className="ml-8 w-full border-2 p-2 rounded-md mt-16 lg:h-1/2 bg-violet-50"
           >
@@ -530,7 +562,7 @@ export default function Home() {
                 {event.title}
               </div>
             ))}
-          </div>{" "}
+          </div>{" "} */}
         </div>
 
         <Transition.Root show={showDeleteModal} as={Fragment}>
