@@ -2,6 +2,8 @@ import { initializeApp } from 'firebase/app';
 import { getDatabase, ref, set } from 'firebase/database';
 import { getFirestore, connectFirestoreEmulator, collection, getDocs, DocumentData, Timestamp } from "firebase/firestore";
 import { doc, setDoc, getDoc, deleteDoc, updateDoc } from "firebase/firestore";
+import { getAuth, signInWithEmailAndPassword, UserCredential } from "firebase/auth";
+import { useRouter } from "next/navigation";
 import firebase from 'firebase/app';
 import 'firebase/firestore';
 
@@ -31,12 +33,18 @@ interface Event {
     groupId?: string; // An identifier for events to be handled together as a group
     id: string;
     type: string;
+    state?: string;
 }
 
-const firebaseApp = initializeApp(firebaseConfig);
+const app = initializeApp(firebaseConfig);
+
+const auth = getAuth(app);
+
+
+//this is for the database
 
 const db = getFirestore();
-//connectFirestoreEmulator(db, '127.0.0.1', 8081);
+// connectFirestoreEmulator(db, '127.0.0.1', 8080);
 
 // const app = initializeApp(firebaseConfig);
 // const db = getFirestore(app);
@@ -166,4 +174,4 @@ async function tmpGetAllEvents() {
 //   }
 
 
-export { db, tmp_set1, DBsetNewEvent, getAllDocuments, deleteEvent, updateEvent }
+export {auth, db, tmp_set1, DBsetNewEvent, getAllDocuments, deleteEvent, updateEvent }

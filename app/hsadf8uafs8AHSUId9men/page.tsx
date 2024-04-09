@@ -1,13 +1,37 @@
 "use client";
 import React from "react";
-import styles from "./login.module.css";
+import styles from "./signup.module.css";
 import { useEffect } from "react";
+import { useRouter } from "next/navigation";
 import { useState } from "react";
+import { createUserWithEmailAndPassword } from "firebase/auth";
+import { auth } from "../database-test/firebase-connection";
 
-export default function Contact() {
+const SignUp = () => {
+  const [email, setEmail] = useState("");
+  const [passwordOne, setPasswordOne] = useState("");
+  const router = useRouter();
+  const [error, setError] = useState(null);
+
+  function onSubmit() {
+    createUserWithEmailAndPassword(auth, email, passwordOne)
+      .then((userCredential) => {
+        // Signed up
+        const user = userCredential.user;
+        userCredential.user.uid;
+        console.log("it works!");
+        // ...
+        window.location.href = "/onboarding";
+      })
+      .catch((error) => {
+        const errorCode = error.code;
+        const errorMessage = error.message;
+        console.log(`not work ${errorMessage}`);
+        // ..
+      });
+  }
   return (
     <>
-      <script src="./login.ts" type="module"></script>
       <nav className="flex justify-between border-b border-violet-100 p-4">
         <h1 className="font-bold text-2xl text-gray-700">Equiduct</h1>
       </nav>
@@ -15,18 +39,20 @@ export default function Contact() {
         <div className="bg-white w-3/5">
           <div className={styles.form_center}>
             <h1 className={styles.h1}>Sign up Tutor Dashboard</h1>
-            <form method="post" action="/" className={styles.actual_form}>
+            <div className={styles.actual_form}>
               <div className={styles.column}>
                 <label htmlFor="email" className={styles.small_font}>
                   Enter your tutor email address
                 </label>
                 <input
+                  onChange={(event) => setEmail(event.target.value)}
                   required
                   className={styles.input}
                   placeholder="email@email.com"
                   type="email"
                   name="email"
-                  id="username-field"
+                  value={email}
+                  id="signUpEmail"
                 />
               </div>
 
@@ -36,28 +62,30 @@ export default function Contact() {
                 </label>
                 <input
                   className={styles.input}
+                  onChange={(event) => setPasswordOne(event.target.value)}
                   required
                   id="password-field"
                   type="password"
-                  name="password"
+                  name="passwordOne"
+                  value={passwordOne}
                   placeholder="••••••••••••"
                 />
               </div>
               <div className={styles.middle}>
                 <button
+                  onClick={onSubmit}
                   className={styles.login}
-                  value="login"
                   id="login-form-submit"
-                  type="submit"
                 >
-                  Login
+                  Signup
                 </button>
               </div>
-            </form>
-            <a href="/signup"> Don't have an account? Signup.</a>
+            </div>
           </div>
         </div>
       </div>
     </>
   );
-}
+};
+
+export default SignUp;

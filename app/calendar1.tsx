@@ -14,6 +14,7 @@ import { EventDropArg, EventSourceInput } from "@fullcalendar/core/index.js";
 import rrulePlugin from "@fullcalendar/rrule";
 import { Calendar } from "@fullcalendar/core";
 import { RRule } from "rrule";
+import listPlugin from '@fullcalendar/list';
 
 import { db, tmp_set1, getAllDocuments, DBsetNewEvent, deleteEvent, updateEvent } from "./database-test/firebase-connection"
 import equi_image from "./components/equiduct.jpeg";
@@ -40,6 +41,7 @@ interface Event {
   groupId?: string; // An identifier for events to be handled together as a group
   id: string;
   type: string;
+  state?: string;
 }
 
 export default function Home() {
@@ -78,7 +80,7 @@ export default function Home() {
         setAllEvents(fetchedEvents);
       })
       .catch((error) => {
-        console.error('Error fetching events:', error);
+        console.error("Error fetching events:", error);
       });
 
     let draggableEl = document.getElementById("draggable-el");
@@ -469,7 +471,7 @@ export default function Home() {
     setAllEvents([...allEvents, ...recurringEvents]);
 
     DBsetNewEvent(recurringEvents);
-    
+
     // Reset form and close modal
     setShowModal(false);
     setNewEvent({
@@ -528,11 +530,12 @@ export default function Home() {
                 interactionPlugin,
                 timeGridPlugin,
                 rrulePlugin,
+                listPlugin
               ]}
               headerToolbar={{
                 left: "title prev next",
                 center: "",
-                right: "resourceTimelineWook, dayGridMonth,timeGridWeek",
+                right: "dayGridMonth,timeGridWeek,listMonth",
               }}
               events={allEvents as EventSourceInput}
               nowIndicator={true}
