@@ -1,0 +1,14 @@
+.card {
+    height:500px;
+    width:350px;
+    min-width:300px;
+    background-color: skyblue;
+    border-radius: 20px;
+    transition-duration: 100ms;
+    margin: 10px;
+}
+
+.card:hover {
+    transform: scale(1.02);
+    transition-duration: 200ms;
+}

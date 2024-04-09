@@ -15,11 +15,26 @@ import { EventDropArg, EventSourceInput } from "@fullcalendar/core/index.js";
 import rrulePlugin from "@fullcalendar/rrule";
 import { Calendar } from "@fullcalendar/core";
 import { RRule } from "rrule";
+<<<<<<< Updated upstream
 import equi_image from "./components/equiduct.jpeg";
 import lansing_image from "./components/lansing_school_district.png";
 import Image from "next/image";
 import { CalendarResponse, parseICS } from "node-ical";
 import listPlugin from "@fullcalendar/list";
+=======
+import listPlugin from "@fullcalendar/list";
+import {
+  db,
+  getAllDocuments,
+  DBsetNewEvent,
+} from "./database-test/firebase-connection";
+import equi_image from "./components/equiduct.jpeg";
+import lansing_image from "./components/lansing_school_district.png";
+import Image from "next/image";
+import { doc, deleteDoc } from "firebase/firestore";
+
+// import { CalendarResponse, parseICS } from "node-ical";
+>>>>>>> Stashed changes
 
 interface Event {
   title: string;
@@ -489,7 +504,11 @@ export default function Home() {
               eventClick={(data) => handleDeleteModal(data)}
               eventDrop={handleEventDrop}
               initialView="dayGridMonth"
+<<<<<<< Updated upstream
               height="110vh"
+=======
+              height="120vh"
+>>>>>>> Stashed changes
             />
           </div>
           <div
