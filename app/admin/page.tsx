@@ -52,6 +52,8 @@ export default function Home() {
             Underneath this is where there is going to be the hours log which I
             don't know if I can do right now
           </p>
+          <p>
+            <a>
               <b>Go to SignUp page</b>
             </a>
           </p>

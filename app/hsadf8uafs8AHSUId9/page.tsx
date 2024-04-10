@@ -12,13 +12,14 @@ const SignUp = () => {
   const [passwordOne, setPasswordOne] = useState("");
   const router = useRouter();
   const [error, setError] = useState(null);
+  const [name, setName] = useState("");
 
   function onSubmit() {
     createUserWithEmailAndPassword(auth, email, passwordOne)
       .then((userCredential) => {
         // Signed up
         const user = userCredential.user;
-        userCredential.user.uid;
+        localStorage.setItem("username", userCredential.user.uid);
         console.log("it works!");
         // ...
       })
@@ -40,6 +41,19 @@ const SignUp = () => {
             <h1 className={styles.h1}>Sign up Tutor Dashboard</h1>
             <div className={styles.actual_form}>
               <div className={styles.column}>
+                <label htmlFor="name" className={styles.small_font}>
+                  Enter your name!
+                </label>
+                <input
+                  onChange={(event) => setName(event.target.value)}
+                  required
+                  className={styles.input}
+                  placeholder="email@email.com"
+                  type="name"
+                  name="name"
+                  value={name}
+                  id="name"
+                />
                 <label htmlFor="email" className={styles.small_font}>
                   Enter your tutor email address
                 </label>

@@ -554,7 +554,7 @@ export default function Home() {
           </p>
           <p className="text-2xl text-center pt-20">Your Tutoring Location</p>
           <div className="h-1 bg-violet-300"></div>
-          {/* <Image
+          <Image
             className="pt-24"
             src={lansing_image}
             width={400}
