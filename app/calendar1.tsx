@@ -6,7 +6,7 @@ import interactionPlugin, {
   DropArg,
 } from "@fullcalendar/interaction";
 import timeGridPlugin from "@fullcalendar/timegrid";
-import { Fragment, useEffect, useState } from "react";
+import { Fragment, SetStateAction, useEffect, useState } from "react";
 import { Dialog, Transition } from "@headlessui/react";
 import { CheckIcon, ExclamationTriangleIcon } from "@heroicons/react/20/solid";
 
@@ -14,15 +14,22 @@ import { EventDropArg, EventSourceInput } from "@fullcalendar/core/index.js";
 import rrulePlugin from "@fullcalendar/rrule";
 import { Calendar } from "@fullcalendar/core";
 import { RRule } from "rrule";
-import listPlugin from '@fullcalendar/list';
+import listPlugin from "@fullcalendar/list";
 
-import { db, tmp_set1, getAllDocuments, DBsetNewEvent, deleteEvent, updateEvent } from "./database-test/firebase-connection"
+import {
+  db,
+  tmp_set1,
+  getAllDocuments,
+  DBsetNewEvent,
+  deleteEvent,
+  updateEvent,
+} from "./database-test/firebase-connection";
 import equi_image from "./components/equiduct.jpeg";
 import lansing_image from "./components/lansing_school_district.png";
 import Image from "next/image";
 // import { CalendarResponse, parseICS } from "node-ical";
 
-import { v4 as uuidv4 } from 'uuid';
+import { v4 as uuidv4 } from "uuid";
 
 interface Event {
   title: string;
@@ -69,7 +76,7 @@ export default function Home() {
     endMinute: 0,
     endPeriod: "AM",
     allDay: false,
-    id: '',
+    id: "",
     type: "",
   });
 
@@ -96,7 +103,7 @@ export default function Home() {
       });
     }
   }, []);
-/*
+  /*
   function loadICS(){
     fetch("/myevents.ics").then(data => data.text()).then((data) => {
       let events: CalendarResponse = parseICS(data);
@@ -135,7 +142,7 @@ export default function Home() {
       start: arg.date,
       allDay: arg.allDay,
       // id: new Date().getTime(),
-      id: uuidv4()
+      id: uuidv4(),
     });
     setShowModal(true);
   }
@@ -184,7 +191,7 @@ export default function Home() {
       title: data.draggedEl.innerText,
       groupId: "recurring-events",
       //id: new Date().getTime(),
-      id: uuidv4()
+      id: uuidv4(),
     }));
 
     setAllEvents([...allEvents, ...recurringEvents]);
@@ -199,37 +206,40 @@ export default function Home() {
 
     const updatedEvents = allEvents.map((existingEvent) => {
       if (String(existingEvent.id) === String(event.id)) {
-          let newEnd = event.end || new Date(startDate.getTime());
+        let newEnd = event.end || new Date(startDate.getTime());
 
-          if (existingEvent.end && startDate) {
-              const duration = new Date(existingEvent.end).getTime() - new Date(existingEvent.start).getTime();
-              newEnd = new Date(startDate.getTime() + duration);
-          }
+        if (existingEvent.end && startDate) {
+          const duration =
+            new Date(existingEvent.end).getTime() -
+            new Date(existingEvent.start).getTime();
+          newEnd = new Date(startDate.getTime() + duration);
+        }
 
-          // Prepare the updated event object
-          const updatedEvent = {
-              start: startDate.toISOString(), // Convert to ISO string for database compatibility
-              end: newEnd.toISOString(),
-          };
+        // Prepare the updated event object
+        const updatedEvent = {
+          start: startDate.toISOString(), // Convert to ISO string for database compatibility
+          end: newEnd.toISOString(),
+        };
 
-          // Call updateEvent to update the database
-          updateEvent(String(existingEvent.id), updatedEvent)
-              .then(() => {
-                  console.log(`Event with ID ${existingEvent.id} updated successfully.`);
-              })
-              .catch((error) => {
-                  console.error('Error updating event:', error);
-              });
+        // Call updateEvent to update the database
+        updateEvent(String(existingEvent.id), updatedEvent)
+          .then(() => {
+            console.log(
+              `Event with ID ${existingEvent.id} updated successfully.`
+            );
+          })
+          .catch((error) => {
+            console.error("Error updating event:", error);
+          });
 
-          return {
-              ...existingEvent,
-              start: startDate,
-              end: newEnd,
-          };
+        return {
+          ...existingEvent,
+          start: startDate,
+          end: newEnd,
+        };
       }
       return existingEvent;
-  });
-
+    });
 
     setAllEvents(updatedEvents);
   }
@@ -240,24 +250,24 @@ export default function Home() {
   }
 
   function handleDelete() {
-    if (idToDelete != null){
-      console.log("OK idToDelete")
-      console.log(idToDelete)
+    if (idToDelete != null) {
+      console.log("OK idToDelete");
+      console.log(idToDelete);
       deleteEvent(String(idToDelete))
         .then(() => {
-          console.log("ok delete DB")
+          console.log("ok delete DB");
           setAllEvents(
             allEvents.filter((event) => String(event.id) !== String(idToDelete))
           );
           setShowDeleteModal(false);
           setIdToDelete(null);
-          console.log("OK delete FE")
+          console.log("OK delete FE");
         })
-        .catch((error) =>{
-          console.error('Error deleting event:', error);
+        .catch((error) => {
+          console.error("Error deleting event:", error);
         });
-    } else{
-      console.log("bruh")
+    } else {
+      console.log("bruh");
     }
   }
 
@@ -275,7 +285,7 @@ export default function Home() {
       endMinute: 0,
       endPeriod: "AM",
       allDay: false,
-      id: '',
+      id: "",
       type: "",
     });
     //setShowDeleteModal(false);
@@ -403,20 +413,28 @@ export default function Home() {
       };
     } else if (repeatInterval === "months") {
       // Example: Repeat on the 15th of every month
+      const selectedMonths: number[] = [];
+      const monthCheckboxes =
+        e.currentTarget.querySelectorAll<HTMLInputElement>(
+          'input[name="monthlyrepeatInterval"]:checked'
+        );
+      monthCheckboxes.forEach((checkbox: HTMLInputElement) => {
+        selectedMonths.push(parseInt(checkbox.value));
+      });
       rruleConfig = {
         freq: RRule.MONTHLY,
-        bymonthday: parseInt(monthlyrepeatInterval),
+        //bymonthday: selectedMonths,
         interval: customTime,
         dtstart: startDate,
         until: endDate,
       };
     } else if (repeatInterval === "years") {
       // Example: Repeat on January 1st every year
-      const [month, day] = yearlyrepeatInterval.split("-");
+      //const [month, day] = yearlyrepeatInterval.split("-");
       rruleConfig = {
         freq: RRule.YEARLY,
-        bymonth: parseInt(month),
-        bymonthday: parseInt(day),
+        //bymonth: parseInt(month),
+        //bymonthday: parseInt(day),
         dtstart: startDate,
         until: endDate,
       };
@@ -432,7 +450,7 @@ export default function Home() {
     const rrule = new RRule({
       ...rruleConfig,
       dtstart: startDate, // Start date of the recurring event
-      until: new Date("2024-12-31"), // End date of the recurring event
+      until: new Date("2055-12-31"), // End date of the recurring event
     });
 
     const occurrences = rrule.all();
@@ -442,7 +460,7 @@ export default function Home() {
       start: date,
       groupId: "recurring-events",
       //id: new Date().getTime() + index,
-      id: uuidv4()
+      id: uuidv4(),
     }));
 
     /*
@@ -485,10 +503,19 @@ export default function Home() {
       endMinute: 0,
       endPeriod: "AM",
       allDay: false,
-      id: '',
+      id: "",
       type: "",
     });
   }
+
+  const [repeatInterval, setRepeatInterval] = useState("norepeat");
+
+  // Function to handle change in repeat interval dropdown
+  const handleRepeatIntervalChange = (e: {
+    target: { value: SetStateAction<string> };
+  }) => {
+    setRepeatInterval(e.target.value);
+  };
 
   return (
     <>
@@ -530,7 +557,7 @@ export default function Home() {
                 interactionPlugin,
                 timeGridPlugin,
                 rrulePlugin,
-                listPlugin
+                listPlugin,
               ]}
               headerToolbar={{
                 left: "title prev next",
@@ -689,7 +716,7 @@ export default function Home() {
                           as="h3"
                           className="text-base font-semibold leading-6 text-gray-900"
                         >
-                          {newEvent.title ? "Edit Event" : "Add Event"}
+                          Add Event
                         </Dialog.Title>
                         <form action="submit" onSubmit={handleSubmit}>
                           <div className="mt-2">
@@ -731,87 +758,86 @@ export default function Home() {
                               <option value="Admin">Admin</option>
                             </select>
                           </div>
-                          <div className="mt-2 grid grid-cols-3 gap-3"></div>
-
-                          {/* First new dropdown box */}
-                          <div className="mt-2">
-                            <select
-                              name="dropdown1"
-                              className="block w-full rounded-md border-0 py-1.5 text-gray-900 
+                          <div className="mt-2 grid grid-cols-3 gap-3">
+                            {/* First new dropdown box */}
+                            <div className="mt-2">
+                              <select
+                                name="dropdown1"
+                                className="block w-full rounded-md border-0 py-1.5 text-gray-900 
     shadow-sm ring-1 ring-inset ring-gray-300 placeholder:text-gray-400 
     focus:ring-2 
     focus:ring-inset focus:ring-violet-600 
     sm:text-sm sm:leading-6"
-                              // Add necessary value and onChange handlers
-                              value={newEvent.startHour} // Set value to reflect the state
-                              onChange={(e) =>
-                                setNewEvent({
-                                  ...newEvent,
-                                  startHour: parseInt(e.target.value),
-                                })
-                              }
-                            >
-                              <option>Start Hour</option>
-                              {/* Add options for the dropdown */}
-                              {[...Array(11)].map((_, index) => (
-                                <option key={index + 1} value={index + 1}>
-                                  {index + 1}
-                                </option>
-                              ))}
-                              <option value={0}>12</option>
-                            </select>
-                          </div>
-                          {/* Second new dropdown box */}
-                          <div className="mt-2">
-                            <select
-                              name="dropdown2"
-                              className="block w-full rounded-md border-0 py-1.5 text-gray-900 
+                                // Add necessary value and onChange handlers
+                                value={newEvent.startHour} // Set value to reflect the state
+                                onChange={(e) =>
+                                  setNewEvent({
+                                    ...newEvent,
+                                    startHour: parseInt(e.target.value),
+                                  })
+                                }
+                              >
+                                <option>Start Hour</option>
+                                {/* Add options for the dropdown */}
+                                {[...Array(11)].map((_, index) => (
+                                  <option key={index + 1} value={index + 1}>
+                                    {index + 1}
+                                  </option>
+                                ))}
+                                <option value={0}>12</option>
+                              </select>
+                            </div>
+                            {/* Second new dropdown box */}
+                            <div className="mt-2">
+                              <select
+                                name="dropdown2"
+                                className="block w-full rounded-md border-0 py-1.5 text-gray-900 
               shadow-sm ring-1 ring-inset ring-gray-300 placeholder:text-gray-400 
               focus:ring-2 
               focus:ring-inset focus:ring-violet-600 
               sm:text-sm sm:leading-6"
-                              // Add necessary value and onChange handlers
-                              value={newEvent.startMinute} // Set value to reflect the state
-                              onChange={(e) =>
-                                setNewEvent({
-                                  ...newEvent,
-                                  startMinute: parseInt(e.target.value),
-                                })
-                              }
-                            >
-                              <option>Start Minute</option>
-                              {/* Add options for the dropdown */}
-                              {[...Array(60)].map((_, index) => (
-                                <option key={index} value={index}>
-                                  {index < 10 ? `0${index}` : `${index}`}
-                                </option>
-                              ))}
-                            </select>
-                          </div>
-                          <div className="mt-2">
-                            <select
-                              name="dropdown1"
-                              className="block w-full rounded-md border-0 py-1.5 text-gray-900 
+                                // Add necessary value and onChange handlers
+                                value={newEvent.startMinute} // Set value to reflect the state
+                                onChange={(e) =>
+                                  setNewEvent({
+                                    ...newEvent,
+                                    startMinute: parseInt(e.target.value),
+                                  })
+                                }
+                              >
+                                <option>Start Minute</option>
+                                {/* Add options for the dropdown */}
+                                {[...Array(60)].map((_, index) => (
+                                  <option key={index} value={index}>
+                                    {index < 10 ? `0${index}` : `${index}`}
+                                  </option>
+                                ))}
+                              </select>
+                            </div>
+                            <div className="mt-2">
+                              <select
+                                name="dropdown2"
+                                className="block w-full rounded-md border-0 py-1.5 text-gray-900 
               shadow-sm ring-1 ring-inset ring-gray-300 placeholder:text-gray-400 
               focus:ring-2 
               focus:ring-inset focus:ring-violet-600 
               sm:text-sm sm:leading-6"
-                              // Add necessary value and onChange handlers
-                              value={newEvent.startPeriod} // Set value to reflect the state
-                              onChange={(e) =>
-                                setNewEvent({
-                                  ...newEvent,
-                                  startPeriod: e.target.value,
-                                })
-                              }
-                            >
-                              <option value="">Start Period</option>
-                              {/* Add options for the dropdown */}
-                              <option value="AM">AM</option>
-                              <option value="PM">PM</option>
-                            </select>
+                                // Add necessary value and onChange handlers
+                                value={newEvent.startPeriod} // Set value to reflect the state
+                                onChange={(e) =>
+                                  setNewEvent({
+                                    ...newEvent,
+                                    startPeriod: e.target.value,
+                                  })
+                                }
+                              >
+                                <option value="">Start Period</option>
+                                {/* Add options for the dropdown */}
+                                <option value="AM">AM</option>
+                                <option value="PM">PM</option>
+                              </select>
+                            </div>
                           </div>
-
                           <div className="mt-2 grid grid-cols-3 gap-3">
                             {/* First new dropdown box */}
                             <div className="mt-2">
@@ -898,7 +924,6 @@ export default function Home() {
                               id="allDay"
                               name="allDay"
                               className="rounded text-violet-600 focus:ring-violet-500 h-4 w-4"
-                              checked={newEvent.allDay}
                               onChange={handleChange}
                             />
                             <label
@@ -910,9 +935,14 @@ export default function Home() {
                           </div>
                           <div className="mt-2">
                             <label htmlFor="repeatInterval">
-                              Repeat Every:
+                              Interval to Repeat On:
                             </label>
-                            <select id="repeatInterval" name="repeatInterval">
+                            <select
+                              id="repeatInterval"
+                              name="repeatInterval"
+                              value={repeatInterval}
+                              onChange={handleRepeatIntervalChange}
+                            >
                               <option value="norepeat">NoRepeat</option>
                               <option value="days">Days</option>
                               <option value="weeks">Weeks</option>
@@ -920,112 +950,154 @@ export default function Home() {
                               <option value="years">Years</option>
                             </select>
                           </div>
-                          <div className="mt-2">
-                            <label htmlFor="dayrepeatInterval">
-                              Repeat Every (Days):
-                            </label>
-                            <input
-                              type="number"
-                              id="dayrepeatInterval"
-                              name="dayrepeatInterval"
-                            />
-                          </div>
+                          {repeatInterval === "weeks" && (
+                            <div className="mt-2">
+                              <label>Repeat On Which Weekdays:</label>
+                              <br />
+                              <input
+                                type="checkbox"
+                                name="weekdayrepeatInterval"
+                                value="0"
+                              />
+                              <label htmlFor="dayMonday"> Monday</label>
+                              <br />
+                              <input
+                                type="checkbox"
+                                name="weekdayrepeatInterval"
+                                value="1"
+                              />
+                              <label htmlFor="dayTuesday"> Tuesday</label>
+                              <br />
+                              <input
+                                type="checkbox"
+                                name="weekdayrepeatInterval"
+                                value="2"
+                              />
+                              <label htmlFor="dayWednesday"> Wednesday</label>
+                              <br />
+                              <input
+                                type="checkbox"
+                                name="weekdayrepeatInterval"
+                                value="3"
+                              />
+                              <label htmlFor="dayThursday"> Thursday</label>
+                              <br />
+                              <input
+                                type="checkbox"
+                                name="weekdayrepeatInterval"
+                                value="4"
+                              />
+                              <label htmlFor="dayFriday"> Friday</label>
+                              <br />
+                              <input
+                                type="checkbox"
+                                name="weekdayrepeatInterval"
+                                value="5"
+                              />
+                              <label htmlFor="daySaturday"> Saturday</label>
+                              <br />
+                              <input
+                                type="checkbox"
+                                name="weekdayrepeatInterval"
+                                value="6"
+                              />
+                              <label htmlFor="daySunday"> Sunday</label>
+                              <br />
+                              <div className="mt-2">
+                                <label htmlFor="customTime">
+                                  Repeat Number Interval:
+                                </label>
+                                <input
+                                  type="number"
+                                  id="customTime"
+                                  name="customTime"
+                                  min="0"
+                                />
+                              </div>
+                              <div className="mt-2">
+                                <label htmlFor="eventDescription">
+                                  Description:
+                                </label>
+                                <input
+                                  type="text"
+                                  id="eventDescription"
+                                  name="eventDescription"
+                                />
+                              </div>
+                            </div>
+                          )}
 
-                          <div className="mt-2" id="weekdayrepeatInterval">
-                            <label>Repeat Every (Days):</label>
-                            <br />
-                            <input
-                              type="checkbox"
-                              name="weekdayrepeatInterval"
-                              value="0"
-                            />
-                            <label htmlFor="dayMonday">Monday</label>
-                            <br />
-                            <input
-                              type="checkbox"
-                              name="weekdayrepeatInterval"
-                              value="1"
-                            />
-                            <label htmlFor="dayTuesday">Tuesday</label>
-                            <br />
-                            <input
-                              type="checkbox"
-                              name="weekdayrepeatInterval"
-                              value="2"
-                            />
-                            <label htmlFor="dayWednesday">Wednesday</label>
-                            <br />
-                            <input
-                              type="checkbox"
-                              name="weekdayrepeatInterval"
-                              value="3"
-                            />
-                            <label htmlFor="dayThursday">Thursday</label>
-                            <br />
-                            <input
-                              type="checkbox"
-                              name="weekdayrepeatInterval"
-                              value="4"
-                            />
-                            <label htmlFor="dayFriday">Friday</label>
-                            <br />
-                            <input
-                              type="checkbox"
-                              name="weekdayrepeatInterval"
-                              value="5"
-                            />
-                            <label htmlFor="daySaturday">Saturday</label>
-                            <br />
-                            <input
-                              type="checkbox"
-                              name="weekdayrepeatInterval"
-                              value="6"
-                            />
-                            <label htmlFor="daySunday">Sunday</label>
-                            <br />
-                          </div>
-
-                          <div className="mt-2">
-                            <label htmlFor="monthlyrepeatInterval">
-                              Repeat Every (Months):
-                            </label>
-                            <input
-                              type="text"
-                              id="monthlyrepeatInterval"
-                              name="monthlyrepeatInterval"
-                            />
-                          </div>
-                          <div className="mt-2">
-                            <label htmlFor="yearlyrepeatInterval">
-                              Repeat Every (Years):
-                            </label>
-                            <input
-                              type="text"
-                              id="yearlyrepeatInterval"
-                              name="yearlyrepeatInterval"
-                            />
-                          </div>
-                          <div className="mt-2">
-                            <label htmlFor="customTime">
-                              Repeat Number Interval:
-                            </label>
-                            <input
-                              type="number"
-                              id="customTime"
-                              name="customTime"
-                              min="1"
-                            />
-                          </div>
-                          <div className="mt-2">
-                            <label htmlFor="eventDescription">
-                              Description:
-                            </label>
-                            <input
-                              type="text"
-                              id="eventDescription"
-                              name="eventDescription"
-                            />
-                          </div>
+                          {repeatInterval === "months" && (
+                            <div className="mt-2">
+                              <label>Repeat Number Interval for Monthly:</label>
+                              <input
+                                type="number"
+                                id="customTime"
+                                name="customTime"
+                                min="0"
+                              />
+                              <div className="mt-2">
+                                <label htmlFor="eventDescription">
+                                  Description:
+                                </label>
+                                <input
+                                  type="text"
+                                  id="eventDescription"
+                                  name="eventDescription"
+                                />
+                              </div>
+                            </div>
+                          )}
+                          {repeatInterval === "years" && (
+                            <div className="mt-2">
+                              <div className="mt-2">
+                                <label htmlFor="customTime">
+                                  Repeat Number Interval for Yearly:
+                                </label>
+                                <input
+                                  type="number"
+                                  id="customTime"
+                                  name="customTime"
+                                  min="0"
+                                />
+                              </div>
+                              <div className="mt-2">
+                                <label htmlFor="eventDescription">
+                                  Description:
+                                </label>
+                                <input
+                                  type="text"
+                                  id="eventDescription"
+                                  name="eventDescription"
+                                />
+                              </div>
+                            </div>
+                          )}
+                          {repeatInterval === "days" && (
+                            <div className="mt-2">
+                              <div className="mt-2">
+                                <label htmlFor="customTime">
+                                  Repeat Number Interval for Days:
+                                </label>
+                                <input
+                                  type="number"
+                                  id="customTime"
+                                  name="customTime"
+                                  min="0"
+                                />
+                              </div>
+                              <div className="mt-2">
+                                <label htmlFor="eventDescription">
+                                  Description:
+                                </label>
+                                <input
+                                  type="text"
+                                  id="eventDescription"
+                                  name="eventDescription"
+                                />
+                              </div>
+                            </div>
+                          )}
                           <div className="mt-5 sm:mt-6 sm:grid sm:grid-flow-row-dense sm:grid-cols-2 sm:gap-3">
                             <button
                               type="submit"
