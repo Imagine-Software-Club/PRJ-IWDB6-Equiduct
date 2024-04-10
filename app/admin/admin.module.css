@@ -2,7 +2,7 @@
     height:500px;
     width:350px;
     min-width:300px;
-    background-color: skyblue;
+    background-color: purple;
     border-radius: 20px;
     transition-duration: 100ms;
     margin: 10px;
@@ -14,11 +14,46 @@
 }
 
 .smallCard {
-    height:100px;
-    width:200px;
-    min-width:300px;
-    background-color: skyblue;
+    height:fit-content;
+    width:90%;
+    background-color: rgb(200, 100, 239);
     border-radius: 20px;
     transition-duration: 100ms;
     margin: 10px;
+    padding: 10px;
+}
+.smallCard:hover {
+    transform: scale(1.02);
+    transition: 100ms;
+}
+
+.p {
+    color: white;
+    font-size: 20px;
+}
+
+.accept{
+    width:45%;
+    margin:5px;
+    padding:5px;
+    color:white;
+    background:rgb(255,255,255,0.1);
+    border-radius: 10px;
+}
+.accept:hover {
+    background:rgb(0,255,0, 0.5);
+    transition-duration:200ms;
+}   
+
+.deny {
+    width:45%;
+    margin:5px;
+    padding:5px;
+    color:white;
+    background:rgb(0,0,0, 0.2);
+    border-radius: 10px;
+}
+.deny:hover {
+    background:rgb(255,0,0, 0.5);
+    transition-duration: 100ms;
 }

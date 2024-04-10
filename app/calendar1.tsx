@@ -435,6 +435,7 @@ export default function Home() {
         freq: RRule.YEARLY,
         //bymonth: parseInt(month),
         //bymonthday: parseInt(day),
+        interval: customTime,
         dtstart: startDate,
         until: endDate,
       };
