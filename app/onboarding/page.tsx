@@ -1,9 +1,27 @@
 "use client";
 import React from "react";
+import { useState } from "react";
 import Image from "next/image";
 import equi_image from "./components/equiduct.jpeg";
 
 export default function Onboarding() {
+  // Define the color array with explicit types
+  function chooseDiv() {
+    const color = ["#3C9EE7", "#E7993C" ];
+
+    // Use the document.querySelector method to get the div element
+    const divElement: HTMLElement | null = document.querySelector("div");
+
+    // Check if the div element exists before adding an event listener
+    if (divElement) {
+        divElement.addEventListener("mouseover", () => {
+            // Ensure the div element exists before setting its style
+            if (divElement) {
+                divElement.style.background = color[Math.floor(Math.random() * color.length)];
+            }
+        });
+  }
+}
   return (
     <>
       <nav className="flex justify-between border-b p-4">
@@ -30,7 +48,7 @@ export default function Onboarding() {
                   <b>Onboarding Requirements</b>
                 </p>
                 <div className="grid grid-cols-2 gap-1">
-                  <div className="flex justify-center items-center bg-zinc-200 h-32 text-center text-2xl">
+                  <div onClick={chooseDiv} className="flex justify-center items-center bg-zinc-200 h-32 text-center text-2xl">
                     Background Check 1
                   </div>
                   <div className="flex justify-center items-center bg-green-500 h-32 text-center text-2xl">

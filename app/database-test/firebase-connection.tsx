@@ -1,9 +1,11 @@
 import { initializeApp } from 'firebase/app';
 import { getDatabase, ref, set } from 'firebase/database';
 import { getFirestore, connectFirestoreEmulator, collection, getDocs, DocumentData, Timestamp } from "firebase/firestore";
+
 import { doc, setDoc, getDoc, deleteDoc, updateDoc } from "firebase/firestore";
 import { getAuth, signInWithEmailAndPassword, UserCredential } from "firebase/auth";
 import { useRouter } from "next/navigation";
+        
 import firebase from 'firebase/app';
 import 'firebase/firestore';
 
@@ -14,7 +16,7 @@ const firebaseConfig = {
     storageBucket: "equiducttest.appspot.com",
     messagingSenderId: "30081829745",
     appId: "1:30081829745:web:defffb0094f6e242ea04d0"
-}
+};
 
 interface Event {
     title: string;
@@ -172,6 +174,5 @@ async function tmpGetAllEvents() {
 //       { name: 'Brittany Seaton', email: 'brittany@example2.org', dir: 'https://linkedin.com/in/brittanyseaton', role: 'OPT-PARTICIPANT' }
 //     ]
 //   }
-
 
 export {auth, db, tmp_set1, DBsetNewEvent, getAllDocuments, deleteEvent, updateEvent }

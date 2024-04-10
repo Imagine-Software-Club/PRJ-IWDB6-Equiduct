@@ -3,6 +3,7 @@ import React from "react";
 import equi_image from "../components/equiduct.jpeg";
 import Image from "next/image";
 import Calendar from "../components/calendar2";
+
 import styles from "./admin.module.css";
 /*
  CARDS - USER
@@ -32,7 +33,7 @@ export default function Home() {
           <p>Add an event</p>
           <p>Delete an event</p>
           <p>"Edit an event"</p>
-          <p>When a user signs up (worry about this later)</p>
+          <p>When a user signs up</p>
           <p></p>
           <br></br>
           <p>This is the signup page that you have to go to:</p>
@@ -41,6 +42,16 @@ export default function Home() {
               className="text-sky-400"
               href="localhost:3000/hsadf8uafs8AHSUId9"
             >
+              <b>localhost:3000/hsadf8uafs8AHSUId9</b>
+            </a>
+          </p>
+        </div>
+        <div className="col-span-4 h-dvh">
+          <p>This is where the main calendar is going to be</p>
+          <p>
+            Underneath this is where there is going to be the hours log which I
+            don't know if I can do right now
+          </p>
               <b>Go to SignUp page</b>
             </a>
           </p>
