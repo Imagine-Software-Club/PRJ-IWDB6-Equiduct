@@ -26,20 +26,54 @@ export default function Home() {
       </nav>
       <div className="grid grid-cols-5">
         <div className="col-span-1 bg-zinc-200 h-dvh">
-          <p className="">This is the notifications</p>
-          <div></div>
-          <p>Types of notifications</p>
-          <br></br>
-          <p>Add an event</p>
-          <p>Delete an event</p>
-          <p>"Edit an event"</p>
-          <p>When a user signs up</p>
-          <p></p>
-          <br></br>
-          <p>This is the signup page that you have to go to:</p>
+          <div className={styles.smallCard}>
+            <p className={styles.p}>Holiday Weekend</p>
+            <button className={styles.accept}>Accept</button>
+            <button className={styles.deny}>Deny</button>
+          </div>
+          <div className={styles.smallCard}>
+            <p className={styles.p}>Holiday Weekend</p>
+            <button className={styles.accept}>Accept</button>
+            <button className={styles.deny}>Deny</button>
+          </div>
+          <div className={styles.smallCard}>
+            <p className={styles.p}>Holiday Weekend</p>
+            <button className={styles.accept}>Accept</button>
+            <button className={styles.deny}>Deny</button>
+          </div>
+          <div className={styles.smallCard}>
+            <p className={styles.p}>Holiday Weekend</p>
+            <button className={styles.accept}>Accept</button>
+            <button className={styles.deny}>Deny</button>
+          </div>
+          <div className={styles.smallCard}>
+            <p className={styles.p}>Holiday Weekend</p>
+            <button className={styles.accept}>Accept</button>
+            <button className={styles.deny}>Deny</button>
+          </div>
+          <div className={styles.smallCard}>
+            <p className={styles.p}>Holiday Weekend</p>
+            <button className={styles.accept}>Accept</button>
+            <button className={styles.deny}>Deny</button>
+          </div>
+          <div className={styles.smallCard}>
+            <p className={styles.p}>Holiday Weekend</p>
+            <button className={styles.accept}>Accept</button>
+            <button className={styles.deny}>Deny</button>
+          </div>
+          <div className={styles.smallCard}>
+            <p className={styles.p}>Holiday Weekend</p>
+            <button className={styles.accept}>Accept</button>
+            <button className={styles.deny}>Deny</button>
+          </div>
+          <div className={styles.smallCard}>
+            <p className={styles.p}>Holiday Weekend</p>
+            <button className={styles.accept}>Accept</button>
+            <button className={styles.deny}>Deny</button>
+          </div>
           <p>
             <a
-              className="text-sky-400"
+              className="m-5 text-sky-400"
               href="localhost:3000/hsadf8uafs8AHSUId9"
             >
               <b>localhost:3000/hsadf8uafs8AHSUId9</b>
