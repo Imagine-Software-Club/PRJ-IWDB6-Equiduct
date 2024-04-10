@@ -1,0 +1,50 @@
+.h1 {
+    font-size: 3rem;
+    padding-bottom:5rem;
+}
+
+.small_font {
+    font-size:small;
+    padding-top:1rem;
+    padding-bottom:1rem;
+}
+
+.form_center {
+    display:flex;
+    flex-direction:column;
+    align-items: center;
+    justify-content: center;
+    height:100vh;
+}
+
+.login {
+    height:5rem;
+    width: 40rem;
+    border:solid black 0px;
+    margin-top: 1rem;
+    border-radius: 1rem;
+    background-color: rgb(182, 220, 195);
+    font-weight: 600;
+    font-size: 1.5rem;
+    margin-top: 5rem;
+}
+
+.actual_form {
+    width:40rem;
+}
+
+.input {
+    height:5rem;
+    border-radius:1rem;
+    border: solid rgb(140, 140, 140) 1px;
+}
+
+.column {
+    display: flex;
+    flex-direction: column;
+}
+
+.middle {
+    display: flex;
+    justify-content: center;
+}
