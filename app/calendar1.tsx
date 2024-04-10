@@ -7,7 +7,7 @@ import interactionPlugin, {
   DropArg,
 } from "@fullcalendar/interaction";
 import timeGridPlugin from "@fullcalendar/timegrid";
-import { Fragment, useEffect, useState } from "react";
+import { Fragment, SetStateAction, useEffect, useState } from "react";
 import { Dialog, Transition } from "@headlessui/react";
 import { CheckIcon, ExclamationTriangleIcon } from "@heroicons/react/20/solid";
 
@@ -15,26 +15,25 @@ import { EventDropArg, EventSourceInput } from "@fullcalendar/core/index.js";
 import rrulePlugin from "@fullcalendar/rrule";
 import { Calendar } from "@fullcalendar/core";
 import { RRule } from "rrule";
-<<<<<<< Updated upstream
-import equi_image from "./components/equiduct.jpeg";
-import lansing_image from "./components/lansing_school_district.png";
-import Image from "next/image";
-import { CalendarResponse, parseICS } from "node-ical";
-import listPlugin from "@fullcalendar/list";
-=======
-import listPlugin from "@fullcalendar/list";
+
 import {
   db,
+  tmp_set1,
   getAllDocuments,
   DBsetNewEvent,
+  deleteEvent,
+  updateEvent,
 } from "./database-test/firebase-connection";
 import equi_image from "./components/equiduct.jpeg";
 import lansing_image from "./components/lansing_school_district.png";
 import Image from "next/image";
+
+import { v4 as uuidv4 } from "uuid";
+import { CalendarResponse, parseICS } from "node-ical";
+import listPlugin from "@fullcalendar/list";
 import { doc, deleteDoc } from "firebase/firestore";
 
 // import { CalendarResponse, parseICS } from "node-ical";
->>>>>>> Stashed changes
 
 interface Event {
   title: string;
@@ -51,8 +50,9 @@ interface Event {
   endMinute: number; // Add end minute variable
   endPeriod: string; // Add end period variable
   groupId?: string; // An identifier for events to be handled together as a group
-  id: number;
+  id: string;
   type: string;
+  state?: string;
 }
 
 export default function Home() {
@@ -64,10 +64,11 @@ export default function Home() {
     { title: "event 4", id: "4" },
     { title: "event 5", id: "5" },
   ]); */
+
   const [allEvents, setAllEvents] = useState<Event[]>([]);
   const [showModal, setShowModal] = useState(false);
   const [showDeleteModal, setShowDeleteModal] = useState(false);
-  const [idToDelete, setIdToDelete] = useState<number | null>(null);
+  const [idToDelete, setIdToDelete] = useState<string | null>(null);
   const [newEvent, setNewEvent] = useState<Event>({
     title: "",
     start: "",
@@ -79,11 +80,20 @@ export default function Home() {
     endMinute: 0,
     endPeriod: "AM",
     allDay: false,
-    id: 0,
+    id: "",
     type: "",
   });
 
   useEffect(() => {
+    getAllDocuments()
+      .then((fetchedEvents) => {
+        //console.log(fetchedEvents)
+        setAllEvents(fetchedEvents);
+      })
+      .catch((error) => {
+        console.error("Error fetching events:", error);
+      });
+
     let draggableEl = document.getElementById("draggable-el");
     if (draggableEl) {
       new Draggable(draggableEl, {
@@ -97,21 +107,54 @@ export default function Home() {
       });
     }
   }, []);
+  /*
+  function loadICS(){
+    fetch("/myevents.ics").then(data => data.text()).then((data) => {
+      let events: CalendarResponse = parseICS(data);
+      let allEvents: Event[] = [];
+      for (const [key, value] of Object.entries(events)) {
+        if (value.type === "VEVENT") {
+          let calendarEvent: Event = {
+            title: value.summary,
+            start: value.start,
+            allDay: false,
+            id: value.start.getTime(),
+
+            end: value.end,
+            // startRecur?: Date | string; // Start date of recurrence
+            // endRecur?: Date | string; // End date of recurrence
+            //daysOfWeek?: number[]; // For weekly recurrence
+            startHour: 0,
+            startMinute: 0,
+            startPeriod: "AM",
+            endHour: 0, // Add end hour variable
+            endMinute: 0, // Add end minute variable
+            endPeriod: "AM", // Add end period variable
+            //groupId?: string; // An identifier for events to be handled together as a group
+            type: typeof value.attendee === 'string' ? value.attendee : '',
+          }
+          allEvents.push(calendarEvent);
+        }
+      }
+      setAllEvents(allEvents);
+    })
+  }*/
 
   function handleDateClick(arg: { date: Date; allDay: boolean }) {
     setNewEvent({
       ...newEvent,
       start: arg.date,
       allDay: arg.allDay,
-      id: new Date().getTime(),
+      // id: new Date().getTime(),
+      id: uuidv4(),
     });
     setShowModal(true);
   }
 
   function handleEventClick(data: { event: { id: string } }) {
-    const clickedEventId = Number(data.event.id);
+    const clickedEventId = String(data.event.id);
     const clickedEvent = allEvents.find(
-      (event) => Number(event.id) === clickedEventId
+      (event) => String(event.id) === clickedEventId
     );
 
     if (clickedEvent) {
@@ -151,7 +194,8 @@ export default function Home() {
       start: date,
       title: data.draggedEl.innerText,
       groupId: "recurring-events",
-      id: new Date().getTime(),
+      //id: new Date().getTime(),
+      id: uuidv4(),
     }));
 
     setAllEvents([...allEvents, ...recurringEvents]);
@@ -165,11 +209,9 @@ export default function Home() {
     const startDate = event.start || new Date();
 
     const updatedEvents = allEvents.map((existingEvent) => {
-      if (Number(existingEvent.id) === Number(event.id)) {
-        // Assume event.end might also be null and handle accordingly.
-        let newEnd = event.end || new Date(startDate.getTime()); // Use startDate's time if end is null.
+      if (String(existingEvent.id) === String(event.id)) {
+        let newEnd = event.end || new Date(startDate.getTime());
 
-        // If the existing event has an end date, calculate the duration and apply it to the new start date.
         if (existingEvent.end && startDate) {
           const duration =
             new Date(existingEvent.end).getTime() -
@@ -177,10 +219,27 @@ export default function Home() {
           newEnd = new Date(startDate.getTime() + duration);
         }
 
+        // Prepare the updated event object
+        const updatedEvent = {
+          start: startDate.toISOString(), // Convert to ISO string for database compatibility
+          end: newEnd.toISOString(),
+        };
+
+        // Call updateEvent to update the database
+        updateEvent(String(existingEvent.id), updatedEvent)
+          .then(() => {
+            console.log(
+              `Event with ID ${existingEvent.id} updated successfully.`
+            );
+          })
+          .catch((error) => {
+            console.error("Error updating event:", error);
+          });
+
         return {
           ...existingEvent,
-          start: startDate, // This is guaranteed to be a Date object.
-          end: newEnd, // This is also guaranteed to be a Date object.
+          start: startDate,
+          end: newEnd,
         };
       }
       return existingEvent;
@@ -191,15 +250,29 @@ export default function Home() {
 
   function handleDeleteModal(data: { event: { id: string } }) {
     setShowDeleteModal(true);
-    setIdToDelete(Number(data.event.id));
+    setIdToDelete(String(data.event.id));
   }
 
   function handleDelete() {
-    setAllEvents(
-      allEvents.filter((event) => Number(event.id) !== Number(idToDelete))
-    );
-    setShowDeleteModal(false);
-    setIdToDelete(null);
+    if (idToDelete != null) {
+      console.log("OK idToDelete");
+      console.log(idToDelete);
+      deleteEvent(String(idToDelete))
+        .then(() => {
+          console.log("ok delete DB");
+          setAllEvents(
+            allEvents.filter((event) => String(event.id) !== String(idToDelete))
+          );
+          setShowDeleteModal(false);
+          setIdToDelete(null);
+          console.log("OK delete FE");
+        })
+        .catch((error) => {
+          console.error("Error deleting event:", error);
+        });
+    } else {
+      console.log("bruh");
+    }
   }
 
   function handleCloseModal() {
@@ -216,7 +289,7 @@ export default function Home() {
       endMinute: 0,
       endPeriod: "AM",
       allDay: false,
-      id: 0,
+      id: "",
       type: "",
     });
     //setShowDeleteModal(false);
@@ -302,14 +375,14 @@ export default function Home() {
       ?.value;
 
     // Now you have all the form data, you can use it as needed.
-    console.log("Repeat Interval:", repeatInterval);
-    console.log("Custom Time:", customTime);
-    //console.log("Number of Repeats:", numRepeats);
-    console.log("Day Repeat Interval:", dayrepeatInterval);
-    console.log("Weekday Repeat Interval:", weekdayrepeatInterval);
-    console.log("Monthly Repeat Interval:", monthlyrepeatInterval);
-    console.log("Yearly Repeat Interval:", yearlyrepeatInterval);
-    console.log("Event Description:", eventDescription);
+    // console.log("Repeat Interval:", repeatInterval);
+    // console.log("Custom Time:", customTime);
+    // //console.log("Number of Repeats:", numRepeats);
+    // console.log("Day Repeat Interval:", dayrepeatInterval);
+    // console.log("Weekday Repeat Interval:", weekdayrepeatInterval);
+    // console.log("Monthly Repeat Interval:", monthlyrepeatInterval);
+    // console.log("Yearly Repeat Interval:", yearlyrepeatInterval);
+    // console.log("Event Description:", eventDescription);
     //console.log(numRepeats);
 
     const startDate = new Date(newEvent.start);
@@ -344,20 +417,28 @@ export default function Home() {
       };
     } else if (repeatInterval === "months") {
       // Example: Repeat on the 15th of every month
+      const selectedMonths: number[] = [];
+      const monthCheckboxes =
+        e.currentTarget.querySelectorAll<HTMLInputElement>(
+          'input[name="monthlyrepeatInterval"]:checked'
+        );
+      monthCheckboxes.forEach((checkbox: HTMLInputElement) => {
+        selectedMonths.push(parseInt(checkbox.value));
+      });
       rruleConfig = {
         freq: RRule.MONTHLY,
-        bymonthday: parseInt(monthlyrepeatInterval),
+        //bymonthday: selectedMonths,
         interval: customTime,
         dtstart: startDate,
         until: endDate,
       };
     } else if (repeatInterval === "years") {
       // Example: Repeat on January 1st every year
-      const [month, day] = yearlyrepeatInterval.split("-");
+      //const [month, day] = yearlyrepeatInterval.split("-");
       rruleConfig = {
         freq: RRule.YEARLY,
-        bymonth: parseInt(month),
-        bymonthday: parseInt(day),
+        //bymonth: parseInt(month),
+        //bymonthday: parseInt(day),
         dtstart: startDate,
         until: endDate,
       };
@@ -373,7 +454,7 @@ export default function Home() {
     const rrule = new RRule({
       ...rruleConfig,
       dtstart: startDate, // Start date of the recurring event
-      until: new Date("2024-12-31"), // End date of the recurring event
+      until: new Date("2055-12-31"), // End date of the recurring event
     });
 
     const occurrences = rrule.all();
@@ -382,7 +463,8 @@ export default function Home() {
       title: newEvent.title,
       start: date,
       groupId: "recurring-events",
-      id: new Date().getTime() + index,
+      //id: new Date().getTime() + index,
+      id: uuidv4(),
     }));
 
     /*
@@ -410,6 +492,8 @@ export default function Home() {
     */
     setAllEvents([...allEvents, ...recurringEvents]);
 
+    DBsetNewEvent(recurringEvents);
+
     // Reset form and close modal
     setShowModal(false);
     setNewEvent({
@@ -423,10 +507,19 @@ export default function Home() {
       endMinute: 0,
       endPeriod: "AM",
       allDay: false,
-      id: 0,
+      id: "",
       type: "",
     });
   }
+
+  const [repeatInterval, setRepeatInterval] = useState("norepeat");
+
+  // Function to handle change in repeat interval dropdown
+  const handleRepeatIntervalChange = (e: {
+    target: { value: SetStateAction<string> };
+  }) => {
+    setRepeatInterval(e.target.value);
+  };
 
   return (
     <>
@@ -466,7 +559,8 @@ export default function Home() {
             src={lansing_image}
             width={400}
             height={20}
-          /> */}
+            alt="this is a picture"
+          />
           <p className=" p-2">Lansing Student Development Program</p>
           <p className=" p-2 pt-3">
             Tutoring every Monday-Thursday at 3:30pm-5:30pm
@@ -491,7 +585,7 @@ export default function Home() {
               headerToolbar={{
                 left: "title prev next",
                 center: "",
-                right: "dayGridMonth,timeGridWeek listMonth",
+                right: "dayGridMonth,timeGridWeek,listMonth",
               }}
               events={allEvents as EventSourceInput}
               nowIndicator={true}
@@ -504,14 +598,10 @@ export default function Home() {
               eventClick={(data) => handleDeleteModal(data)}
               eventDrop={handleEventDrop}
               initialView="dayGridMonth"
-<<<<<<< Updated upstream
-              height="110vh"
-=======
               height="120vh"
->>>>>>> Stashed changes
             />
           </div>
-          <div
+          {/* <div
             id="draggable-el"
             className="ml-8 w-full border-2 p-2 rounded-md mt-16 lg:h-1/2 bg-violet-50"
           >
@@ -525,7 +615,7 @@ export default function Home() {
                 {event.title}
               </div>
             ))}
-          </div>
+          </div>{" "} */}
         </div>
 
         <Transition.Root show={showDeleteModal} as={Fragment}>
@@ -649,7 +739,7 @@ export default function Home() {
                           as="h3"
                           className="text-base font-semibold leading-6 text-gray-900"
                         >
-                          {newEvent.title ? "Edit Event" : "Add Event"}
+                          Add Event
                         </Dialog.Title>
                         <form action="submit" onSubmit={handleSubmit}>
                           <div className="mt-2">
@@ -691,87 +781,86 @@ export default function Home() {
                               <option value="Admin">Admin</option>
                             </select>
                           </div>
-                          <div className="mt-2 grid grid-cols-3 gap-3"></div>
-
-                          {/* First new dropdown box */}
-                          <div className="mt-2">
-                            <select
-                              name="dropdown1"
-                              className="block w-full rounded-md border-0 py-1.5 text-gray-900 
+                          <div className="mt-2 grid grid-cols-3 gap-3">
+                            {/* First new dropdown box */}
+                            <div className="mt-2">
+                              <select
+                                name="dropdown1"
+                                className="block w-full rounded-md border-0 py-1.5 text-gray-900 
     shadow-sm ring-1 ring-inset ring-gray-300 placeholder:text-gray-400 
     focus:ring-2 
     focus:ring-inset focus:ring-violet-600 
     sm:text-sm sm:leading-6"
-                              // Add necessary value and onChange handlers
-                              value={newEvent.startHour} // Set value to reflect the state
-                              onChange={(e) =>
-                                setNewEvent({
-                                  ...newEvent,
-                                  startHour: parseInt(e.target.value),
-                                })
-                              }
-                            >
-                              <option>Start Hour</option>
-                              {/* Add options for the dropdown */}
-                              {[...Array(11)].map((_, index) => (
-                                <option key={index + 1} value={index + 1}>
-                                  {index + 1}
-                                </option>
-                              ))}
-                              <option value={0}>12</option>
-                            </select>
-                          </div>
-                          {/* Second new dropdown box */}
-                          <div className="mt-2">
-                            <select
-                              name="dropdown2"
-                              className="block w-full rounded-md border-0 py-1.5 text-gray-900 
+                                // Add necessary value and onChange handlers
+                                value={newEvent.startHour} // Set value to reflect the state
+                                onChange={(e) =>
+                                  setNewEvent({
+                                    ...newEvent,
+                                    startHour: parseInt(e.target.value),
+                                  })
+                                }
+                              >
+                                <option>Start Hour</option>
+                                {/* Add options for the dropdown */}
+                                {[...Array(11)].map((_, index) => (
+                                  <option key={index + 1} value={index + 1}>
+                                    {index + 1}
+                                  </option>
+                                ))}
+                                <option value={0}>12</option>
+                              </select>
+                            </div>
+                            {/* Second new dropdown box */}
+                            <div className="mt-2">
+                              <select
+                                name="dropdown2"
+                                className="block w-full rounded-md border-0 py-1.5 text-gray-900 
               shadow-sm ring-1 ring-inset ring-gray-300 placeholder:text-gray-400 
               focus:ring-2 
               focus:ring-inset focus:ring-violet-600 
               sm:text-sm sm:leading-6"
-                              // Add necessary value and onChange handlers
-                              value={newEvent.startMinute} // Set value to reflect the state
-                              onChange={(e) =>
-                                setNewEvent({
-                                  ...newEvent,
-                                  startMinute: parseInt(e.target.value),
-                                })
-                              }
-                            >
-                              <option>Start Minute</option>
-                              {/* Add options for the dropdown */}
-                              {[...Array(60)].map((_, index) => (
-                                <option key={index} value={index}>
-                                  {index < 10 ? `0${index}` : `${index}`}
-                                </option>
-                              ))}
-                            </select>
-                          </div>
-                          <div className="mt-2">
-                            <select
-                              name="dropdown1"
-                              className="block w-full rounded-md border-0 py-1.5 text-gray-900 
+                                // Add necessary value and onChange handlers
+                                value={newEvent.startMinute} // Set value to reflect the state
+                                onChange={(e) =>
+                                  setNewEvent({
+                                    ...newEvent,
+                                    startMinute: parseInt(e.target.value),
+                                  })
+                                }
+                              >
+                                <option>Start Minute</option>
+                                {/* Add options for the dropdown */}
+                                {[...Array(60)].map((_, index) => (
+                                  <option key={index} value={index}>
+                                    {index < 10 ? `0${index}` : `${index}`}
+                                  </option>
+                                ))}
+                              </select>
+                            </div>
+                            <div className="mt-2">
+                              <select
+                                name="dropdown2"
+                                className="block w-full rounded-md border-0 py-1.5 text-gray-900 
               shadow-sm ring-1 ring-inset ring-gray-300 placeholder:text-gray-400 
               focus:ring-2 
               focus:ring-inset focus:ring-violet-600 
               sm:text-sm sm:leading-6"
-                              // Add necessary value and onChange handlers
-                              value={newEvent.startPeriod} // Set value to reflect the state
-                              onChange={(e) =>
-                                setNewEvent({
-                                  ...newEvent,
-                                  startPeriod: e.target.value,
-                                })
-                              }
-                            >
-                              <option value="">Start Period</option>
-                              {/* Add options for the dropdown */}
-                              <option value="AM">AM</option>
-                              <option value="PM">PM</option>
-                            </select>
+                                // Add necessary value and onChange handlers
+                                value={newEvent.startPeriod} // Set value to reflect the state
+                                onChange={(e) =>
+                                  setNewEvent({
+                                    ...newEvent,
+                                    startPeriod: e.target.value,
+                                  })
+                                }
+                              >
+                                <option value="">Start Period</option>
+                                {/* Add options for the dropdown */}
+                                <option value="AM">AM</option>
+                                <option value="PM">PM</option>
+                              </select>
+                            </div>
                           </div>
-
                           <div className="mt-2 grid grid-cols-3 gap-3">
                             {/* First new dropdown box */}
                             <div className="mt-2">
@@ -858,7 +947,6 @@ export default function Home() {
                               id="allDay"
                               name="allDay"
                               className="rounded text-violet-600 focus:ring-violet-500 h-4 w-4"
-                              checked={newEvent.allDay}
                               onChange={handleChange}
                             />
                             <label
@@ -870,9 +958,14 @@ export default function Home() {
                           </div>
                           <div className="mt-2">
                             <label htmlFor="repeatInterval">
-                              Repeat Every:
+                              Interval to Repeat On:
                             </label>
-                            <select id="repeatInterval" name="repeatInterval">
+                            <select
+                              id="repeatInterval"
+                              name="repeatInterval"
+                              value={repeatInterval}
+                              onChange={handleRepeatIntervalChange}
+                            >
                               <option value="norepeat">NoRepeat</option>
                               <option value="days">Days</option>
                               <option value="weeks">Weeks</option>
@@ -880,112 +973,157 @@ export default function Home() {
                               <option value="years">Years</option>
                             </select>
                           </div>
-                          <div className="mt-2">
-                            <label htmlFor="dayrepeatInterval">
-                              Repeat Every (Days):
-                            </label>
-                            <input
-                              type="number"
-                              id="dayrepeatInterval"
-                              name="dayrepeatInterval"
-                            />
-                          </div>
+                          {repeatInterval === "weeks" && (
+                            <div className="mt-2">
+                              <label>Repeat On Which Weekdays:</label>
+                              <br />
+                              <input
+                                type="checkbox"
+                                name="weekdayrepeatInterval"
+                                value="0"
+                              />
+                              <label htmlFor="dayMonday"> Monday</label>
+                              <br />
+                              <input
+                                type="checkbox"
+                                name="weekdayrepeatInterval"
+                                value="1"
+                              />
+                              <label htmlFor="dayTuesday"> Tuesday</label>
+                              <br />
+                              <input
+                                type="checkbox"
+                                name="weekdayrepeatInterval"
+                                value="2"
+                              />
+                              <label htmlFor="dayWednesday"> Wednesday</label>
+                              <br />
+                              <input
+                                type="checkbox"
+                                name="weekdayrepeatInterval"
+                                value="3"
+                              />
+                              <label htmlFor="dayThursday"> Thursday</label>
+                              <br />
+                              <input
+                                type="checkbox"
+                                name="weekdayrepeatInterval"
+                                value="4"
+                              />
+                              <label htmlFor="dayFriday"> Friday</label>
+                              <br />
+                              <input
+                                type="checkbox"
+                                name="weekdayrepeatInterval"
+                                value="5"
+                              />
+                              <label htmlFor="daySaturday"> Saturday</label>
+                              <br />
+                              <input
+                                type="checkbox"
+                                name="weekdayrepeatInterval"
+                                value="6"
+                              />
+                              <label htmlFor="daySunday"> Sunday</label>
+                              <br />
+                              <div className="mt-2">
+                                <label htmlFor="customTime">
+                                  Weekly Repeat Interval:
+                                </label>
+                                <input
+                                  type="number"
+                                  id="customTime"
+                                  name="customTime"
+                                  min="0"
+                                />
+                              </div>
+                              <div className="mt-2">
+                                <label htmlFor="eventDescription">
+                                  Description:
+                                </label>
+                                <input
+                                  type="text"
+                                  id="eventDescription"
+                                  name="eventDescription"
+                                />
+                              </div>
+                            </div>
+                          )}
 
-                          <div className="mt-2" id="weekdayrepeatInterval">
-                            <label>Repeat Every (Days):</label>
-                            <br />
-                            <input
-                              type="checkbox"
-                              name="weekdayrepeatInterval"
-                              value="0"
-                            />
-                            <label htmlFor="dayMonday">Monday</label>
-                            <br />
-                            <input
-                              type="checkbox"
-                              name="weekdayrepeatInterval"
-                              value="1"
-                            />
-                            <label htmlFor="dayTuesday">Tuesday</label>
-                            <br />
-                            <input
-                              type="checkbox"
-                              name="weekdayrepeatInterval"
-                              value="2"
-                            />
-                            <label htmlFor="dayWednesday">Wednesday</label>
-                            <br />
-                            <input
-                              type="checkbox"
-                              name="weekdayrepeatInterval"
-                              value="3"
-                            />
-                            <label htmlFor="dayThursday">Thursday</label>
-                            <br />
-                            <input
-                              type="checkbox"
-                              name="weekdayrepeatInterval"
-                              value="4"
-                            />
-                            <label htmlFor="dayFriday">Friday</label>
-                            <br />
-                            <input
-                              type="checkbox"
-                              name="weekdayrepeatInterval"
-                              value="5"
-                            />
-                            <label htmlFor="daySaturday">Saturday</label>
-                            <br />
-                            <input
-                              type="checkbox"
-                              name="weekdayrepeatInterval"
-                              value="6"
-                            />
-                            <label htmlFor="daySunday">Sunday</label>
-                            <br />
-                          </div>
-
-                          <div className="mt-2">
-                            <label htmlFor="monthlyrepeatInterval">
-                              Repeat Every (Months):
-                            </label>
-                            <input
-                              type="text"
-                              id="monthlyrepeatInterval"
-                              name="monthlyrepeatInterval"
-                            />
-                          </div>
-                          <div className="mt-2">
-                            <label htmlFor="yearlyrepeatInterval">
-                              Repeat Every (Years):
-                            </label>
-                            <input
-                              type="text"
-                              id="yearlyrepeatInterval"
-                              name="yearlyrepeatInterval"
-                            />
-                          </div>
-                          <div className="mt-2">
-                            <label htmlFor="customTime">
-                              Repeat Number Interval:
-                            </label>
-                            <input
-                              type="number"
-                              id="customTime"
-                              name="customTime"
-                              min="1"
-                            />
-                          </div>
-                          <div className="mt-2">
-                            <label htmlFor="eventDescription">
-                              Description:
-                            </label>
-                            <input
-                              type="text"
-                              id="eventDescription"
-                              name="eventDescription"
-                            />
-                          </div>
+                          {repeatInterval === "months" && (
+                            <div className="mt-2">
+                              <label>Monthly Repeat Interval:</label>
+                              <input
+                                type="number"
+                                id="customTime"
+                                name="customTime"
+                                min="0"
+                              />
+                              <div className="mt-2">
+                                <label htmlFor="eventDescription">
+                                  Description:
+                                </label>
+                                <input
+                                  type="text"
+                                  id="eventDescription"
+                                  name="eventDescription"
+                                />
+                              </div>
+                            </div>
+                          )}
+                          {repeatInterval === "years" && (
+                            <div className="mt-2">
+                              <div className="mt-2">
+                                <label htmlFor="customTime">
+                                  Yearly Repeat Interval:
+                                </label>
+                                <input
+                                  type="number"
+                                  id="customTime"
+                                  name="customTime"
+                                  min="0"
+                                />
+                              </div>
+                              <div className="mt-2">
+                                <label htmlFor="eventDescription">
+                                  Description:
+                                </label>
+                                <input
+                                  type="text"
+                                  id="eventDescription"
+                                  name="eventDescription"
+                                />
+                              </div>
+                            </div>
+                          )}
+                          {repeatInterval === "days" && (
+                            <div className="mt-2">
+                              <div className="mt-2">
+                                <label
+                                  htmlFor="customTime"
+                                  style={{ textAlign: "left" }}
+                                >
+                                  Day Repeat Interval:
+                                </label>
+                                <input
+                                  type="number"
+                                  id="customTime"
+                                  name="customTime"
+                                  min="0"
+                                />
+                              </div>
+                              <div className="mt-2">
+                                <label htmlFor="eventDescription">
+                                  Description:
+                                </label>
+                                <input
+                                  type="text"
+                                  id="eventDescription"
+                                  name="eventDescription"
+                                />
+                              </div>
+                            </div>
+                          )}
                           <div className="mt-5 sm:mt-6 sm:grid sm:grid-flow-row-dense sm:grid-cols-2 sm:gap-3">
                             <button
                               type="submit"

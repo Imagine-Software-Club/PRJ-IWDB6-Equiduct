@@ -12,3 +12,13 @@
     transform: scale(1.02);
     transition-duration: 200ms;
 }
+
+.smallCard {
+    height:100px;
+    width:200px;
+    min-width:300px;
+    background-color: skyblue;
+    border-radius: 20px;
+    transition-duration: 100ms;
+    margin: 10px;
+}

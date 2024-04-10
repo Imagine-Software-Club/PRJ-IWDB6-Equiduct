@@ -34,3 +34,4 @@ yarn-error.log*
 # typescript
 *.tsbuildinfo
 next-env.d.ts
+app/database-test/equiducttest-firebase-adminsdk-ue1br-5289d71fa5.json

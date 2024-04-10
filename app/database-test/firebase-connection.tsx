@@ -1,11 +1,11 @@
 import { initializeApp } from 'firebase/app';
 import { getDatabase, ref, set } from 'firebase/database';
 import { getFirestore, connectFirestoreEmulator, collection, getDocs, DocumentData, Timestamp } from "firebase/firestore";
-import { doc, setDoc, getDoc, deleteDoc } from "firebase/firestore";
+
+import { doc, setDoc, getDoc, deleteDoc, updateDoc } from "firebase/firestore";
 import { getAuth, signInWithEmailAndPassword, UserCredential } from "firebase/auth";
 import { useRouter } from "next/navigation";
-
-
+        
 import firebase from 'firebase/app';
 import 'firebase/firestore';
 
@@ -33,7 +33,7 @@ interface Event {
     endMinute: number; // Add end minute variable
     endPeriod: string; // Add end period variable
     groupId?: string; // An identifier for events to be handled together as a group
-    id: number;
+    id: string;
     type: string;
     state?: string;
 }
@@ -56,6 +56,9 @@ const db = getFirestore();
 //     state: "CA",
 //     country: "USA"
 // });
+let temp_role = 'Admin'
+//let temp_role = 'Junior Achievement'
+// Admin, Mentorship, Tutor, Junior Achievement, Select Role
 let name = 'event'
 let cnt = 100
 
@@ -66,8 +69,9 @@ function getAllDocuments(): Promise<Event[]> {
 
         getDocs(collectionRef).then((querySnapshot) => {
             querySnapshot.forEach((doc) => {
-                cnt += 1;
+                //cnt += 1;
                 const eventData = doc.data() as Event; // Cast the document data to Event type
+                if(temp_role !== 'Admin' && eventData.type !== temp_role) return;
 
                 let startDate: Date;
                 if (eventData.start instanceof Timestamp) {
@@ -82,8 +86,8 @@ function getAllDocuments(): Promise<Event[]> {
                     ...eventData,
                     start: startDate
                 };
-                console.log("DEBUG!!!")
-                console.log(event);
+                //console.log("DEBUG!!!")
+                //console.log(event);
                 allEvents.push(event);
             });
             resolve(allEvents);
@@ -93,10 +97,10 @@ function getAllDocuments(): Promise<Event[]> {
     });
 }
 
-// function tmp_set1(event: any) {
-//     setDoc(doc(db, "events", name + cnt), event);
-//     cnt += 1;
-// }
+function tmp_set1(event: any) {
+    setDoc(doc(db, "events", name + cnt), event);
+    cnt += 1;
+}
 
 function DBsetNewEvent(events: Event[]) {
     events.forEach(event => {
@@ -104,6 +108,26 @@ function DBsetNewEvent(events: Event[]) {
     })
 }
 
+function deleteEvent(eventId: string): Promise<void> {
+    eventId = name + eventId
+    return deleteDoc(doc(db, 'events', eventId))
+        .then(() => {
+            console.log(`Event with ID ${eventId} deleted successfully.`);
+        });
+}
+
+// Function to update an event
+function updateEvent(eventId: string, updatedEvent: Partial<Event>): Promise<void> {
+    eventId = name + eventId
+    return updateDoc(doc(db, 'events', eventId), updatedEvent)
+        .then(() => {
+            console.log(`Event with ID ${eventId} updated successfully.`);
+        })
+        .catch((error) => {
+            console.error('Error updating event:', error);
+            throw error; // Rethrow the error to propagate it to the caller
+        });
+}
 
 // const docRef = doc(db, "cities", "SF");
 // const docSnap = await getDoc(docRef);
@@ -115,23 +139,23 @@ function DBsetNewEvent(events: Event[]) {
 //   console.log("No such document!");
 // }
 
-// async function tmpGetAllEvents() {
-//     let i = 1;
-//     let allEvents = [];
-//     while (1) {
-//         let docRef = doc(db, "events", name + i);
-//         let docSnap = await getDoc(docRef);
+async function tmpGetAllEvents() {
+    let i = 1;
+    let allEvents = [];
+    while (1) {
+        let docRef = doc(db, "events", name + i);
+        let docSnap = await getDoc(docRef);
 
-//         if (docSnap.exists()) {
-//             allEvents.push(docSnap.data())
-//             i += 1;
-//         }
-//         else {
-//             break;
-//         }
-//     }
-//     return allEvents;
-// }
+        if (docSnap.exists()) {
+            allEvents.push(docSnap.data())
+            i += 1;
+        }
+        else {
+            break;
+        }
+    }
+    return allEvents;
+}
 
 // const event = {
 //     start: [2018, 5, 30, 6, 30],
@@ -151,5 +175,4 @@ function DBsetNewEvent(events: Event[]) {
 //     ]
 //   }
 
-
-export { auth, db, DBsetNewEvent, getAllDocuments }
+export {auth, db, tmp_set1, DBsetNewEvent, getAllDocuments, deleteEvent, updateEvent }
