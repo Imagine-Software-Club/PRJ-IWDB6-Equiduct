@@ -1005,7 +1005,7 @@ export default function Home() {
                               <br />
                               <div className="mt-2">
                                 <label htmlFor="customTime">
-                                  Repeat Number Interval:
+                                  Weekly Repeat Interval:
                                 </label>
                                 <input
                                   type="number"
@@ -1029,7 +1029,7 @@ export default function Home() {
 
                           {repeatInterval === "months" && (
                             <div className="mt-2">
-                              <label>Repeat Number Interval for Monthly:</label>
+                              <label>Monthly Repeat Interval:</label>
                               <input
                                 type="number"
                                 id="customTime"
@@ -1052,7 +1052,7 @@ export default function Home() {
                             <div className="mt-2">
                               <div className="mt-2">
                                 <label htmlFor="customTime">
-                                  Repeat Number Interval for Yearly:
+                                  Yearly Repeat Interval:
                                 </label>
                                 <input
                                   type="number"
@@ -1076,8 +1076,11 @@ export default function Home() {
                           {repeatInterval === "days" && (
                             <div className="mt-2">
                               <div className="mt-2">
-                                <label htmlFor="customTime">
-                                  Repeat Number Interval for Days:
+                                <label
+                                  htmlFor="customTime"
+                                  style={{ textAlign: "left" }}
+                                >
+                                  Day Repeat Interval:
                                 </label>
                                 <input
                                   type="number"
