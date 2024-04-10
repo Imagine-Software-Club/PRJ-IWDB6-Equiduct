@@ -5,13 +5,15 @@ import { useEffect } from "react";
 import { useRouter } from "next/navigation";
 import { useState } from "react";
 import { createUserWithEmailAndPassword } from "firebase/auth";
-import { auth } from "../firebase";
+import { auth } from "../database-test/firebase-connection";
+import { setUser } from "../database-test/firebase-connection";
 
 const SignUp = () => {
   const [email, setEmail] = useState("");
   const [passwordOne, setPasswordOne] = useState("");
   const router = useRouter();
   const [error, setError] = useState(null);
+  const [name, setName] = useState("");
 
   function onSubmit() {
     createUserWithEmailAndPassword(auth, email, passwordOne)
@@ -29,6 +31,7 @@ const SignUp = () => {
         // ..
       });
   }
+
   return (
     <>
       <nav className="flex justify-between border-b border-violet-100 p-4">
@@ -40,6 +43,17 @@ const SignUp = () => {
             <h1 className={styles.h1}>Sign up Tutor Dashboard</h1>
             <div className={styles.actual_form}>
               <div className={styles.column}>
+                <label htmlFor="name" className={styles.small_font}>
+                  Enter your name
+                </label>
+                <input
+                  onChange={(event) => setName(event.target.value)}
+                  required
+                  className={styles.input}
+                  placeholder="Johnathon Sablowsky"
+                  name="name"
+                  value={name}
+                />
                 <label htmlFor="email" className={styles.small_font}>
                   Enter your tutor email address
                 </label>

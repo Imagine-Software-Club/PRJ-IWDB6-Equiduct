@@ -3,25 +3,10 @@ import React from "react";
 import { useState } from "react";
 import Image from "next/image";
 import equi_image from "./components/equiduct.jpeg";
+import { auth } from "../database-test/firebase-connection";
 
 export default function Onboarding() {
-  // Define the color array with explicit types
-  function chooseDiv() {
-    const color = ["#3C9EE7", "#E7993C" ];
-
-    // Use the document.querySelector method to get the div element
-    const divElement: HTMLElement | null = document.querySelector("div");
-
-    // Check if the div element exists before adding an event listener
-    if (divElement) {
-        divElement.addEventListener("mouseover", () => {
-            // Ensure the div element exists before setting its style
-            if (divElement) {
-                divElement.style.background = color[Math.floor(Math.random() * color.length)];
-            }
-        });
-  }
-}
+  console.log(auth.currentUser);
   return (
     <>
       <nav className="flex justify-between border-b p-4">
@@ -31,13 +16,30 @@ export default function Onboarding() {
         <div className="col-span-1 bg-zinc-200 h-dvh">
           <div className="p-3 bg-zinc-50 m-5 rounded-xl">
             <h2 className="text-lg">Please fill these background forms out:</h2>
-            <p className="text-sky-600 m-3"><a href="https://madisondiocese.org/documents/2017/1/onlinelingo.pdf"download>Background Check #1</a></p>
+            <p className="text-sky-600 m-3">
+              <a
+                href="https://madisondiocese.org/documents/2017/1/onlinelingo.pdf"
+                download
+              >
+                Background Check #1
+              </a>
+            </p>
 
             {/* the above link is just a random pdf that i have to replace */}
-            <p className="text-sky-600 m-3"><a href="https://madisondiocese.org/documents/2017/1/onlinelingo.pdf"download>Background Check #2</a></p>
+            <p className="text-sky-600 m-3">
+              <a
+                href="https://madisondiocese.org/documents/2017/1/onlinelingo.pdf"
+                download
+              >
+                Background Check #2
+              </a>
+            </p>
             {/* same with this one too*/}
-            <p className="text-lg pt-5">Once you have filled out the background check forms, please email the completed forms to: <b>maddenlu@msu.edu</b></p>
-            </div>
+            <p className="text-lg pt-5">
+              Once you have filled out the background check forms, please email
+              the completed forms to: <b>maddenlu@msu.edu</b>
+            </p>
+          </div>
         </div>
         <div className="col-span-4">
           <div className="mt-6">
