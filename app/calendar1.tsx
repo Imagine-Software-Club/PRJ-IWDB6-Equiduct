@@ -32,8 +32,6 @@ import { CalendarResponse, parseICS } from "node-ical";
 import listPlugin from "@fullcalendar/list";
 import { doc, deleteDoc } from "firebase/firestore";
 
-// import { CalendarResponse, parseICS } from "node-ical";
-
 interface Event {
   title: string;
   start: Date | string;
@@ -56,13 +54,6 @@ interface Event {
 
 export default function Home() {
   const [events, setEvents] = useState([]);
-  /* const [events, setEvents] = useState([
-    { title: "event 1", id: "1" },
-    { title: "event 2", id: "2" },
-    { title: "event 3", id: "3" },
-    { title: "event 4", id: "4" },
-    { title: "event 5", id: "5" },
-  ]); */
 
   const [allEvents, setAllEvents] = useState<Event[]>([]);
   const [showModal, setShowModal] = useState(false);
@@ -106,38 +97,6 @@ export default function Home() {
       });
     }
   }, []);
-  /*
-  function loadICS(){
-    fetch("/myevents.ics").then(data => data.text()).then((data) => {
-      let events: CalendarResponse = parseICS(data);
-      let allEvents: Event[] = [];
-      for (const [key, value] of Object.entries(events)) {
-        if (value.type === "VEVENT") {
-          let calendarEvent: Event = {
-            title: value.summary,
-            start: value.start,
-            allDay: false,
-            id: value.start.getTime(),
-
-            end: value.end,
-            // startRecur?: Date | string; // Start date of recurrence
-            // endRecur?: Date | string; // End date of recurrence
-            //daysOfWeek?: number[]; // For weekly recurrence
-            startHour: 0,
-            startMinute: 0,
-            startPeriod: "AM",
-            endHour: 0, // Add end hour variable
-            endMinute: 0, // Add end minute variable
-            endPeriod: "AM", // Add end period variable
-            //groupId?: string; // An identifier for events to be handled together as a group
-            type: typeof value.attendee === 'string' ? value.attendee : '',
-          }
-          allEvents.push(calendarEvent);
-        }
-      }
-      setAllEvents(allEvents);
-    })
-  }*/
 
   function handleDateClick(arg: { date: Date; allDay: boolean }) {
     setNewEvent({
@@ -163,7 +122,6 @@ export default function Home() {
         end: clickedEvent.end,
         allDay: clickedEvent.allDay,
         id: clickedEvent.id,
-        //type: clickedEvent.type,
         startHour: clickedEvent.startHour, // Initialize start hour variable
         startMinute: clickedEvent.startMinute, // Initialize start minute variable
         startPeriod: clickedEvent.startPeriod, // Initialize start period variable
@@ -291,7 +249,6 @@ export default function Home() {
       id: "",
       type: "",
     });
-    //setShowDeleteModal(false);
     setIdToDelete(null);
   }
 
@@ -303,6 +260,7 @@ export default function Home() {
     }));
   };
 
+  // function that gets called when the form is submitted
   function handleSubmit(e: React.FormEvent<HTMLFormElement>) {
     e.preventDefault();
 
@@ -373,22 +331,10 @@ export default function Home() {
     const eventDescription = (eventDescriptionElement as HTMLInputElement)
       ?.value;
 
-    // Now you have all the form data, you can use it as needed.
-    // console.log("Repeat Interval:", repeatInterval);
-    // console.log("Custom Time:", customTime);
-    // //console.log("Number of Repeats:", numRepeats);
-    // console.log("Day Repeat Interval:", dayrepeatInterval);
-    // console.log("Weekday Repeat Interval:", weekdayrepeatInterval);
-    // console.log("Monthly Repeat Interval:", monthlyrepeatInterval);
-    // console.log("Yearly Repeat Interval:", yearlyrepeatInterval);
-    // console.log("Event Description:", eventDescription);
-    //console.log(numRepeats);
-
     const startDate = new Date(newEvent.start);
     startDate.setHours(selectedHour, selectedMinute);
 
-    // Set up start and end dates for recurrence
-    // Set up recurrence rule
+    // Sets up rrulejs event recurrence configurations
     let rruleConfig = {};
     if (repeatInterval === "days") {
       rruleConfig = {
@@ -426,7 +372,6 @@ export default function Home() {
       });
       rruleConfig = {
         freq: RRule.MONTHLY,
-        //bymonthday: selectedMonths,
         interval: customTime,
         dtstart: startDate,
         until: endDate,
@@ -436,8 +381,6 @@ export default function Home() {
       //const [month, day] = yearlyrepeatInterval.split("-");
       rruleConfig = {
         freq: RRule.YEARLY,
-        //bymonth: parseInt(month),
-        //bymonthday: parseInt(day),
         interval: customTime,
         dtstart: startDate,
         until: endDate,
@@ -463,33 +406,9 @@ export default function Home() {
       title: newEvent.title,
       start: date,
       groupId: "recurring-events",
-      //id: new Date().getTime() + index,
       id: uuidv4(),
     }));
 
-    /*
-    // Check if the new event already exists in allEvents
-    const existingEventIndex = allEvents.findIndex(
-      (event) => Number(event.id) === Number(newEvent.id)
-    );
-
-    if (existingEventIndex !== -1) {
-      // If it exists, update the existing event in allEvents
-      const updatedEvents = [...allEvents];
-      updatedEvents[existingEventIndex] = {
-        ...newEvent,
-        start: selectedDate,
-        end: endDate,
-      };
-      setAllEvents(updatedEvents);
-    } else {
-      // If it doesn't exist, add the new event to allEvents
-      setAllEvents([
-        ...allEvents,
-        { ...newEvent, start: selectedDate, end: endDate },
-      ]);
-    }
-    */
     setAllEvents([...allEvents, ...recurringEvents]);
 
     DBsetNewEvent(recurringEvents);
@@ -601,21 +520,6 @@ export default function Home() {
               height="120vh"
             />
           </div>
-          {/* <div
-            id="draggable-el"
-            className="ml-8 w-full border-2 p-2 rounded-md mt-16 lg:h-1/2 bg-violet-50"
-          >
-            <h1 className="font-bold text-lg text-center">Drag Event</h1>
-            {events.map((event) => (
-              <div
-                className="fc-event border-2 w-full rounded-md ml-auto text-center bg-white"
-                title={event.title}
-                key={event.id}
-              >
-                {event.title}
-              </div>
-            ))}
-          </div>{" "} */}
         </div>
 
         <Transition.Root show={showDeleteModal} as={Fragment}>
