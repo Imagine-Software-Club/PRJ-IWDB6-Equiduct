@@ -18,7 +18,6 @@ import { RRule } from "rrule";
 
 import {
   db,
-  tmp_set1,
   getAllDocuments,
   DBsetNewEvent,
   deleteEvent,
